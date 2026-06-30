@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Trismegistus</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="console">
+      <header class="topbar">
+        <div class="identity">
+          <img src="/static/assets/trismegistus-logo.png" alt="Trismegistus" />
+          <div>
+            <p class="kicker">NemoHermes route / NemoClaw buildout</p>
+            <h1>Trismegistus</h1>
+            <p class="subline">A Nous-aligned self-improving operator: NemoHermes/OpenClaw runtime, CB5 foundation, persistent memory, helper agents, and skill-to-paid-work lanes.</p>
+          </div>
+        </div>
+        <div class="runtime-strip" id="runtimeStrip"></div>
+      </header>
+
+      <section class="main-grid">
+        <aside class="rail left-rail">
+          <div class="toolbar secondary-toolbar">
+            <button id="newThread" class="ghost">New Chat</button>
+          </div>
+
+          <section class="pane">
+            <div class="pane-head">
+              <span>Live lane</span>
+              <small id="modelLaneState">checking</small>
+            </div>
+            <div id="modelLanePanel" class="runtime-panel"></div>
+          </section>
+
+          <section class="pane queue-pane">
+            <div class="pane-head">
+              <span>Chat threads</span>
+              <small id="queueCount">0 threads</small>
+            </div>
+            <div id="leadQueue" class="lead-queue"></div>
+          </section>
+        </aside>
+
+        <section class="workspace">
+          <section class="pane conversation-pane">
+            <div class="pane-head">
+              <span>Context chat</span>
+              <small id="chatRuntimeLabel">model checking</small>
+            </div>
+            <div id="messages" class="messages">
+              <div class="empty">Talk to Trismegistus, or open a job when you want work mode.</div>
+            </div>
+            <form id="chatForm" class="chat-form">
+              <button id="voiceListen" type="button" class="ghost voice-button" title="Browser speech input">Mic</button>
+              <input id="chatInput" placeholder="Talk to Trismegistus..." autocomplete="off" />
+              <button id="voiceTalkback" type="button" class="ghost voice-button" title="Read assistant replies with Home Node-style Samantha talkback">Voice Off</button>
+              <button id="sendChat" type="submit" disabled>Send</button>
+            </form>
+            <div id="voiceState" class="voice-state">Browser mic input / Samantha talkback available after runtime check.</div>
+          </section>
+
+          <section class="active-job">
+            <div>
+              <p class="kicker">Trismegistus state</p>
+              <h2 id="selectedTitle">Loading agent lane.</h2>
+              <p id="selectedMeta" class="muted">Runtime first. Jobs are one lane. Codex is the upgrade loop.</p>
+            </div>
+            <div id="scoreboard" class="scoreboard-grid"></div>
+          </section>
+
+          <section class="lower-dock">
+            <details class="pane dock-details" open>
+              <summary>
+                <span>Agent ledger</span>
+                <small id="reportState">live ledger</small>
+              </summary>
+              <pre id="reportOutput" class="output">Waiting for the first status pass.</pre>
+            </details>
+
+            <details class="pane dock-details">
+              <summary>
+                <span>SSP / C5B checkpoints</span>
+                <small id="checkpointState">source receipts</small>
+              </summary>
+              <div id="checkpointPanel" class="checkpoint-panel"></div>
+            </details>
+
+            <details class="pane dock-details">
+              <summary>
+                <span>Runtime / OpenClaw gate</span>
+                <button id="refreshRuntime" class="mini" type="button">Refresh</button>
+              </summary>
+              <div class="dock-grid">
+                <section>
+                  <div class="dock-label">Runtime truth</div>
+                  <div id="runtimePanel" class="runtime-panel"></div>
+                </section>
+                <section>
+                  <div class="dock-label">OpenClaw gate</div>
+                  <div id="foundationPanel" class="foundation-panel"></div>
+                </section>
+              </div>
+            </details>
+
+            <details class="pane dock-details">
+              <summary>
+                <span>Tools doctor</span>
+                <button id="runToolsDoctor" class="mini" type="button">Run</button>
+              </summary>
+              <pre id="toolsDoctorOutput" class="output">Run the tools doctor to test source fetch, Telegram sync, and RAG receipts.</pre>
+            </details>
+
+            <details class="pane dock-details" open>
+              <summary>
+                <span>Browser missions</span>
+                <small id="browserMissionState">ready gate</small>
+              </summary>
+              <div class="mission-actions">
+                <button id="refreshBrowserMissions" class="mini" type="button">Status</button>
+                <button id="startWebArenaSubset" class="mini" type="button">Start WebArena</button>
+                <button id="runBrowserActionTrace" class="mini" type="button">Trace</button>
+                <button id="runLiveSiteSequence" class="mini" type="button">Live Sites</button>
+                <button id="runBrowserSmoke" class="mini" type="button">CDP Smoke</button>
+                <button id="runBenchmarkGate" class="mini" type="button">Benchmark Gate</button>
+                <button id="runCodexHelperStatus" class="mini" type="button">Codex Helper</button>
+                <button id="queueCodexHelperRequest" class="mini" type="button">Queue Patch Request</button>
+                <button id="runCodexHelperMission" class="mini" type="button">Run Patch Mission</button>
+                <button id="runCodexHelperCleanSlice" class="mini" type="button">Run Clean4 Mission</button>
+              </div>
+              <pre id="browserMissionsOutput" class="output">Browser missions run Playwright/CDP actions with saved traces and receipts.</pre>
+            </details>
+
+            <details class="pane dock-details">
+              <summary>
+                <span>Run log</span>
+                <small>SQLite</small>
+              </summary>
+              <div id="events" class="events"></div>
+            </details>
+          </section>
+        </section>
+      </section>
+    </main>
+    <script src="/static/app.js"></script>
+  </body>
+</html>
