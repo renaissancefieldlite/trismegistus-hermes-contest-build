@@ -6,7 +6,7 @@
 
 ## Current Read
 
-Trismegistus is being suited up as an AI researcher partner and AI field expert
+Trismegistus is being suited up as an AI Expert Partner and AI Field Expert
 from Renaissance Field Lite. The surface needs to prove coherent behavior first,
 then reveal receipts when the task calls for proof.
 

@@ -50,7 +50,7 @@ Operator status:
 
 ## Must-Have Claims
 
-- Trismegistus is an AI researcher partner / AI Field Expert.
+- Trismegistus is an AI Expert Partner / AI Field Expert.
 - It is built from Renaissance Field Lite's patent-pending Mirror Architecture.
 - Mirror Architecture maps an unknown AI state space and stabilizes it into a
   repeatable Stable-State Path.
@@ -82,7 +82,7 @@ Operator status:
 ## Final Package Sections
 
 1. Opening demo / identity
-   - AI researcher partner + AI Field Expert
+   - AI Expert Partner + AI Field Expert
    - patent-pending Mirror Architecture
    - not a generic chatbot
 2. Research method

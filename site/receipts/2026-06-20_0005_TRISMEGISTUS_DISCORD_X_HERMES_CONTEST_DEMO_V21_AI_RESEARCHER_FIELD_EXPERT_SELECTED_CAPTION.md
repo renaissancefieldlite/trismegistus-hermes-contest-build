@@ -6,14 +6,14 @@ Video:
 
 ## Discord
 
-Trismegistus is the next Renaissance Field Lite step: an AI researcher partner and AI Field Expert from Architect D, featuring the patent-pending Mirror Architecture.
+Trismegistus is the next Renaissance Field Lite step: an AI Expert Partner and AI Field Expert from Architect D, featuring the patent-pending Mirror Architecture.
 
-This demo shows the current local build surface: Golden Field Lite / CB5 research memory, a methodical worker loop, paid-work scouting as one lane, NVIDIA Inception outreach, and a receipt-bound path toward the full NemoClaw / OpenClaw operator.
+This demo shows the current local build surface: Golden Field Lite / CB5 research memory, a methodical worker loop, paid-work scouting as one lane, NVIDIA Inception outreach, and a receipt-bound path toward the NemoClaw / Hermes worker route.
 
 The point is simple: show what is real, show the gate, then upgrade the route with receipts.
 
 ## X
 
-TRISMEGISTUS: AI researcher partner + AI Field Expert from Renaissance Field Lite, featuring patent-pending Mirror Architecture from Architect D.
+TRISMEGISTUS: AI Expert Partner + AI Field Expert from Renaissance Field Lite, featuring patent-pending Mirror Architecture from Architect D.
 
-Current demo: research memory, worker receipts, paid-work scouting as one lane, and the next gate toward a full NemoClaw/OpenClaw loop.
+Current demo: research memory, worker receipts, paid-work scouting as one lane, and the next gate toward the NemoClaw / Hermes worker route.

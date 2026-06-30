@@ -55,7 +55,7 @@ Priority order:
 
 ## Public-Safe Dress Rehearsal Language
 
-Trismegistus is an AI researcher partner and field expert layer from
+Trismegistus is an AI Expert Partner and field expert layer from
 Renaissance Field Lite. It routes through local Hermes/NemoHermes-style
 runtime, receipt memory, browser/source tools, and benchmark gates to show
 traceable research, web action, coding support, and review-gated field

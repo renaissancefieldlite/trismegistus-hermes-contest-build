@@ -25,7 +25,7 @@ MIRROR_VOCAL_LAB = PLAYGROUND / "MirrorVocalLab"
 LATTICE_COMPANION_URL = "https://renaissancefieldlite.com/lattice-companion.html"
 
 DRESS_REHEARSAL_MISSION = (
-    "AI researcher partner and field expert from Renaissance Field Lite: route through "
+    "AI Expert Partner and field expert from Renaissance Field Lite: route through "
     "Hermes/NemoHermes/OpenClaw where available, use Golden Mark/CB5 stable-state evidence, "
     "save SQL/JSON/RAG receipts, and apply the SWE-bench recursive repair discipline across "
     "research, coding, browser, and paid-work lanes as review-gated action."
