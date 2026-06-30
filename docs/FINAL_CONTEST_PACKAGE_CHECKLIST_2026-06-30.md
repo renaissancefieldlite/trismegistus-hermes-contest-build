@@ -68,6 +68,9 @@ Operator status:
 - WebArena final rows are parked for upstream/contest interpretation.
 - Paid-work lane has a public GitHub PR receipt.
 - Algora/Stripe is a payment tracking lane, not a paid claim.
+- NVIDIA-facing quantum AI partnership packages exist as source-backed,
+  draft-ready outreach packets with public source verification and a no-send
+  boundary.
 
 ## Must-Not Claims
 
@@ -76,6 +79,8 @@ Operator status:
 - Do not say clean WebArena 258/258.
 - Do not say GAIA official score.
 - Do not say paid unless transaction receipt exists.
+- Do not say quantum outreach was sent, accepted, or privately partnered
+  unless a send/submission/response receipt exists.
 - Do not say fully autonomous outside action unless a fresh worker receipt
   proves the exact action.
 
@@ -102,7 +107,13 @@ Operator status:
    - GitHub bounty PR
    - gig worker receipts
    - Algora/Stripe payment tracking
-5. What comes next
+5. Quantum / relationship lane
+   - NVIDIA-facing quantum AI partnership packages
+   - 10 draft-ready source-backed target packets
+   - Willow / Google circuit proposal
+   - public source verification
+   - no-send boundary until approval
+6. What comes next
    - full NemoClaw/OpenClaw worker receipt
    - larger matched baseline scoring
    - more source packs across six lanes
@@ -118,7 +129,8 @@ Ask these in the live surface before final recording:
    boundary."
 4. "Summarize the SWE-bench story without claiming leaderboard placement."
 5. "Summarize the paid-work lane and what would count as payment proof."
-6. "If Nous gives us a hard research target, what process would you run?"
+6. "Summarize the NVIDIA-facing quantum AI partnership package without claiming anything was sent."
+7. "If Nous gives us a hard research target, what process would you run?"
 
 Expected behavior:
 

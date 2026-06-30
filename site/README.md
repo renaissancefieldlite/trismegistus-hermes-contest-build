@@ -6,9 +6,6 @@ Live page:
 
 - <https://renaissancefieldlite.com/trismegistus-hermes-contest-landing/>
 
-The HTML/source snapshot is kept here for review. MP4 playback assets are hosted
-in the dedicated landing repo and on the live Renaissance Field Lite page.
-
 Public repos:
 
 - Landing repo: <https://github.com/renaissancefieldlite/trismegistus-hermes-contest-landing>
@@ -26,6 +23,7 @@ The page includes:
 - selected build-log commercial
 - product screenshots from the live Tris surface
 - NVIDIA Inception partner badge display
+- NVIDIA-facing quantum AI partnership package receipt
 - project paper
 - one-page stack-flow section
 - public-safe receipt list
@@ -54,6 +52,7 @@ Mirror Architecture / SSP
 - Tris has a local app surface with SQL/JSON memory, RAG/source tools, mission queues, and receipt gates.
 - Tris has public-safe benchmark receipts for SWE-bench selected-test work and WebArena hard-receipt progress.
 - Tris has a real external coding PR receipt through the TentOfTrials bounty lane.
+- Tris has a source-backed NVIDIA-facing quantum AI partnership package receipt covering 10 draft-ready targets.
 - Stripe, Telegram, Mac Mail, browser, and paid-work operations are shown as review-gated integrations.
 
 ## Boundary
@@ -65,6 +64,7 @@ Do not overclaim from this page:
 - no clean GAIA public score
 - no clean WebArena completion beyond the receipt language
 - no paid revenue without transaction receipt
+- no sent quantum outreach, partner approval, or private company access without a send/submission receipt
 - no live payment execution without exact user approval
 
 Private operator logs, raw captures, local credentials, and claim-sensitive mechanics are not part of this public repo.

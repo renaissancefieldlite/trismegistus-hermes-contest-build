@@ -115,6 +115,25 @@
 - Boundary:
   no paid claim until Algora/Stripe transaction receipt exists.
 
+## NVIDIA-Facing Quantum AI Partnership Packages
+
+- Readout:
+  `/Users/renaissancefieldlite1.0/Documents/Playground/trismegistus/final_submission_package_2026-06-30/QUANTUM_AI_PARTNERSHIP_PACKAGES_20260629T195007Z/QUANTUM_AI_PARTNERSHIP_PACKAGES_READOUT.md`
+- Public source verification:
+  `/Users/renaissancefieldlite1.0/Documents/Playground/trismegistus/final_submission_package_2026-06-30/QUANTUM_AI_PARTNERSHIP_PACKAGES_20260629T195007Z/02_PUBLIC_SOURCE_VERIFICATION_20260629.md`
+- Willow / Google circuit proposal:
+  `/Users/renaissancefieldlite1.0/Documents/Playground/trismegistus/final_submission_package_2026-06-30/QUANTUM_AI_PARTNERSHIP_PACKAGES_20260629T195007Z/01_WILLOW_GOOGLE_CIRCUIT_PROPOSAL.md`
+- Public-safe claim:
+  Tris produced 10 draft-ready, source-backed quantum AI partnership packages:
+  Quantinuum, QuEra, Quantum Machines, IonQ, D-Wave, Google Quantum AI, IBM
+  Quantum, Xanadu, Pasqal, and Atom Computing. The NVIDIA-facing route is
+  framed through public NVAQC / quantum computing context and reviewed source
+  links, not private partner access.
+- Boundary:
+  no quantum outreach email, partner submission, company response, or private
+  NVIDIA/company relationship claim is complete without a saved send/submission
+  receipt.
+
 ## Nous Application Packet
 
 - Application folder:
