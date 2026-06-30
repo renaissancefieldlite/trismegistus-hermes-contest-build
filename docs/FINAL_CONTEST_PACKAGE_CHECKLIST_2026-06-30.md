@@ -23,7 +23,7 @@ Operator status:
 
 - Typeform already filled out.
 - Use the same X post as the main public post, then add/update the thread with
-  the final V09 commercial, project paper, and landing page.
+  the final V14 commercial, project paper, and landing page.
 - Repost the updated package in Discord and use that Discord post as the fresh
   contest channel receipt.
 - Use the public Tris landing repo/project link for the GitHub / project field.
@@ -41,7 +41,7 @@ Operator status:
 - Selected build-log commercial checked.
   - `2026-06-21_0127_TRISMEGISTUS_DISCORD_X_BUILD_LOG_COMMERCIAL_V25_TELEGRAM_BROWSER_RAG_BENCHMARKS_SELECTED_VIDEO.mp4`
 - Final announcement commercial checked.
-  - V09 opens with the RFL logo-system graphic and NVIDIA Inception Partner
+  - V14 opens with the RFL logo-system graphic and NVIDIA Inception Partner
     badge, includes the Mirror Architecture / latent state-space / V7 / V8 /
     SSP explanation slide before the C5B slide, and stays under 3 minutes.
 - Receipt page / receipt files linked.
@@ -133,7 +133,7 @@ Expected behavior:
 Ready when:
 
 - the four-post arc has copy for X and Discord
-- the same X post is updated/threaded with final V09 material
+- the same X post is updated/threaded with final V14 material
 - the Discord post is refreshed with landing page, paper, and receipt index
 - final landing page links are checked
 - landing page screenshots are public-safe / redacted
