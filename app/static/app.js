@@ -385,6 +385,8 @@ function renderCheckpoints() {
 function renderRuntime(data) {
   cachedRuntime = data;
   const modelRuntime = data.model_runtime || {};
+  const hostedDemo = Boolean(data.hosted_demo);
+  const hostedModelConfigured = Boolean(data.hosted_model_configured);
   const openclaw = modelRuntime.openclaw || data.nemoclaw || {};
   const gfl = modelRuntime.golden_field_lite || {};
   const ollama = modelRuntime.ollama || {};
@@ -405,9 +407,10 @@ function renderRuntime(data) {
   const routeProvider = openclawReady ? `NemoHermes/OpenClaw (${openclawProvider})` : openclawProvider;
   const openclawAgent = openclaw.agent || nemo.agent || "trismegistus";
   const chatModel = gflActive ? "OpenHermes 2.5 Mistral 7B 4-bit / MLX" : openclawModel;
+  const routeBlockedLabel = hostedDemo && !hostedModelConfigured ? "provider key required" : "route blocked";
 
   runtimeStrip.innerHTML = [
-    chip("Chat route", gflActive ? "GFL Hermes/MLX" : (openclawReady ? "OpenClaw answers" : "route blocked"), state(gflActive || openclawReady)),
+    chip("Chat route", gflActive ? "GFL Hermes/MLX" : (openclawReady ? "OpenClaw answers" : routeBlockedLabel), state(gflActive || openclawReady)),
     chip("Worker agent", openclawReady ? openclawAgent : "next gate", state(openclawReady, true)),
     chip("NemoClaw", telegramReady ? "telegram live" : (nemoclawInstalled ? (openclawReady ? "worker receipt" : "channel gate") : "CLI missing"), state(telegramReady || openclawReady, nemoclawInstalled)),
     chip("Model", modelReady ? chatModel : "no model answering", state(modelReady)),
@@ -417,9 +420,17 @@ function renderRuntime(data) {
     ? `Chat route: Golden Field Lite bridge -> local Hermes/MLX checkpoint on 127.0.0.1:8788. Evidence docs: ${gfl.evidence_count ?? "n/a"}; JSONL: ${gfl.jsonl_entries ?? "n/a"}.`
     : openclawReady
     ? `Model route: OpenShell -> OpenClaw agent ${openclawAgent} -> ${openclawModel}. Worker artifacts are the autonomy gate.`
+    : hostedDemo && !hostedModelConfigured
+    ? "Hosted Render UI is online, but no Hermes/Nous provider key is connected. Chat responses are bounded proof/demo text until HERMES_API_KEY or NOUS_API_KEY is set."
     : `OpenClaw is not answering yet. Standby local model: ${ollama.model || "none"}.`;
   modelLaneState.textContent = modelReady ? "live" : "blocked";
-  chatRuntimeLabel.textContent = gflActive ? "GFL Hermes bridge live" : (openclawReady ? "OpenClaw model route live" : "OpenClaw blocked");
+  chatRuntimeLabel.textContent = gflActive
+    ? "GFL Hermes bridge live"
+    : openclawReady
+    ? "OpenClaw model route live"
+    : hostedDemo && !hostedModelConfigured
+    ? "Hermes provider gated"
+    : "OpenClaw blocked";
   modelLanePanel.innerHTML = [
     runtimeItem("Model response lane", modelText, state(modelReady)),
     runtimeItem(
@@ -436,7 +447,7 @@ function renderRuntime(data) {
     runtimeItem("OpenClaw model route", openclawReady ? `Named agent ${openclawAgent} answered through the contest sandbox path.` : (blockers.join("; ") || "OpenClaw worker receipt pending."), state(openclawReady, nemoclawInstalled)),
     runtimeItem("Autonomous worker", "Local worker cycle can create trace artifacts. No job application, email, or Stripe live action is claimed until separate connector receipts exist.", "warn"),
     runtimeItem("Model route", openclawReady ? `${routeProvider} / ${openclawModel}` : "No contest model route verified.", state(openclawReady)),
-    runtimeItem("Hermes endpoint", hermesReady ? "Hermes Agent / Nous route answered." : "Standalone Hermes endpoint is not the active lane when GFL bridge or OpenClaw is answering.", state(hermesReady, true)),
+    runtimeItem("Hermes endpoint", hermesReady ? "Hermes Agent / Nous route answered." : (hostedDemo && !hostedModelConfigured ? "No hosted Hermes/Nous key is connected on Render." : "Standalone Hermes endpoint is not the active lane when GFL bridge or OpenClaw is answering."), state(hermesReady, hostedDemo)),
   ].join("");
 
   foundationPanel.innerHTML = [
@@ -741,12 +752,15 @@ document.getElementById("chatForm").addEventListener("submit", async (event) => 
     renderMessages(result.messages || []);
     const assistantReply = [...(result.messages || [])].reverse().find((item) => item.role === "assistant")?.content || result.result?.text || "";
     if (result.result?.ok) {
+      const modelGenerated = result.result.model_generated !== false;
       if (result.result.selected_lead_id) {
         selectedLeadId = result.result.selected_lead_id;
       }
-      reportState.textContent = "model live";
+      reportState.textContent = modelGenerated ? "model live" : "provider gated";
       reportOutput.textContent = [
-        `Model lane: ${result.result.runtime_lane || result.result.source}`,
+        `Lane: ${result.result.runtime_lane || result.result.source}`,
+        modelGenerated ? "Model generation: live" : "Model generation: not connected on this hosted route",
+        result.result.provider_gate ? `Provider gate: ${result.result.provider_gate}` : "",
         result.result.provider ? `Provider: ${result.result.provider}` : "",
         result.result.model ? `Model: ${result.result.model}` : "",
         result.result.session_file ? `OpenClaw session: ${result.result.session_file}` : "",

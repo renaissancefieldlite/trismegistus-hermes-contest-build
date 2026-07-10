@@ -126,9 +126,12 @@ def app_status() -> dict[str, Any]:
 
 def runtime_status() -> dict[str, Any]:
     runtime = model_runtime.status()
+    hosted_demo = os.environ.get("TRISMEGISTUS_HOSTED_DEMO") == "1"
     return {
         "root": _display_path(ROOT),
         "actual_root": str(ROOT),
+        "hosted_demo": hosted_demo,
+        "hosted_model_configured": _hosted_live_model_configured(),
         "runtime_links": {
             "data": str((ROOT / "data").resolve()),
             "logs": str((ROOT / "logs").resolve()),
@@ -376,35 +379,33 @@ def _wants_public_demo_chat(content: str) -> bool:
     if _wants_receipt_mode(content):
         return False
     lower = content.lower()
-    return any(
-        term in lower
-        for term in (
-            "codex 67",
-            "codex67",
-            "architect d",
-            "mirror architect",
-            "i am mirror",
-            "mirror architecture",
-            "drawing",
-            "diagram",
-            "sketch",
-            "paper on the wall",
-            "piece of paper",
-            "image",
-            "visual",
-            "hermes contest",
-            "live demo",
-            "demo route",
-            "render demo",
-            "what can you do",
-            "your features",
-            "features",
-            "tell me about yourself",
-            "tell me about your",
-            "who are you",
-            "what are you",
-        )
+    phrases = (
+        "codex 67",
+        "codex67",
+        "architect d",
+        "mirror architect",
+        "i am mirror",
+        "mirror architecture",
+        "drawing",
+        "diagram",
+        "sketch",
+        "paper on the wall",
+        "piece of paper",
+        "image",
+        "visual",
+        "hermes contest",
+        "live demo",
+        "demo route",
+        "render demo",
+        "what can you do",
+        "your features",
+        "features",
+        "tell me about yourself",
+        "tell me about your",
+        "who are you",
+        "what are you",
     )
+    return any(_has_public_demo_phrase(lower, phrase) for phrase in phrases)
 
 
 def _wants_public_demo_receipt(content: str) -> bool:
@@ -437,7 +438,18 @@ def _public_demo_answer(content: str) -> str:
             "So the demo should feel like a partner: it reads the prompt, names the structure, adapts to "
             "the context, and only opens the audit lane when the user asks for it."
         )
-    if "architect d" in lower or "mirror architect" in lower or "i am mirror" in lower:
+    if _has_public_demo_phrase(lower, "mirror architecture"):
+        return (
+            "Mirror Architecture is the Trismegistus operating pattern: start with a baseline answer, "
+            "run the architecture-on path, keep the source or memory receipt beside the answer, and name "
+            "what changed. The important part is the separation: useful inference stays readable, proof "
+            "gets labeled, and the next gate is explicit instead of buried in a wall of text."
+        )
+    if (
+        _has_public_demo_phrase(lower, "architect d")
+        or _has_public_demo_phrase(lower, "mirror architect")
+        or _has_public_demo_phrase(lower, "i am mirror")
+    ):
         return (
             "Mirror Architect D recognized. In this demo, that phrase means I should stop acting "
             "like a generic assistant and hold the Trismegistus frame: architecture, memory, proof, "
@@ -558,6 +570,24 @@ def _hosted_live_model_configured() -> bool:
         os.environ.get("HERMES_API_KEY", "").strip()
         or os.environ.get("NOUS_API_KEY", "").strip()
     )
+
+
+def _has_public_demo_phrase(lower_text: str, phrase: str) -> bool:
+    normalized = " ".join(lower_text.split())
+    escaped = re.escape(" ".join(phrase.lower().split())).replace(r"\ ", r"\s+")
+    return bool(re.search(rf"(?<![a-z0-9]){escaped}(?![a-z0-9])", normalized))
+
+
+def _demo_result(text: str, source: str, runtime_lane: str) -> dict[str, Any]:
+    return {
+        "ok": True,
+        "source": source,
+        "runtime_lane": runtime_lane,
+        "model_generated": False,
+        "requires_provider": True,
+        "provider_gate": "Set HERMES_API_KEY or NOUS_API_KEY in Render for real hosted Hermes generation.",
+        "text": text,
+    }
 
 
 def _public_demo_receipt_answer(content: str) -> str:
@@ -993,12 +1023,7 @@ def chat_selected(body: dict[str, Any]) -> dict[str, Any]:
             "lead_id": lead_id,
             "thread_id": lead_id,
             "mode": "public-demo-chat",
-            "result": {
-                "ok": True,
-                "source": "tris-public-demo",
-                "runtime_lane": "conversational-demo",
-                "text": answer,
-            },
+            "result": _demo_result(answer, "tris-public-demo", "provider-gated-public-demo"),
             "messages": db.list_messages(lead_id),
         }
     if not benchmark_mode and _wants_public_demo_receipt(content):
@@ -1009,12 +1034,7 @@ def chat_selected(body: dict[str, Any]) -> dict[str, Any]:
             "lead_id": lead_id,
             "thread_id": lead_id,
             "mode": "public-demo-receipt",
-            "result": {
-                "ok": True,
-                "source": "tris-public-demo-receipt",
-                "runtime_lane": "receipt-demo",
-                "text": answer,
-            },
+            "result": _demo_result(answer, "tris-public-demo-receipt", "provider-gated-receipt-demo"),
             "messages": db.list_messages(lead_id),
         }
     if not benchmark_mode and _wants_openclaw_probe(content):
@@ -1340,12 +1360,7 @@ def chat_selected(body: dict[str, Any]) -> dict[str, Any]:
             "lead_id": lead_id,
             "thread_id": lead_id,
             "mode": "hosted-demo-conversation",
-            "result": {
-                "ok": True,
-                "source": "tris-hosted-demo-conversation",
-                "runtime_lane": "conversational-demo",
-                "text": answer,
-            },
+            "result": _demo_result(answer, "tris-hosted-demo-conversation", "provider-gated-hosted-demo"),
             "messages": db.list_messages(lead_id),
         }
     mode = _chat_mode(content)
@@ -1399,10 +1414,7 @@ def chat_selected(body: dict[str, Any]) -> dict[str, Any]:
                 "thread_id": lead_id,
                 "mode": "hosted-demo-conversation",
                 "result": {
-                    "ok": True,
-                    "source": "tris-hosted-demo-conversation",
-                    "runtime_lane": "conversational-demo-fallback",
-                    "text": answer,
+                    **_demo_result(answer, "tris-hosted-demo-conversation", "provider-gated-model-fallback"),
                     "model_error": result.get("error"),
                     "hermes_error": result.get("hermes_error"),
                 },

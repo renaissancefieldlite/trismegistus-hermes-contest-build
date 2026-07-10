@@ -17,17 +17,52 @@ _STATUS_REFRESHING = False
 _STATUS_LOCK = threading.Lock()
 
 
+def _hosted_demo_mode() -> bool:
+    return os.environ.get("TRISMEGISTUS_HOSTED_DEMO") == "1"
+
+
+def _hosted_model_configured() -> bool:
+    return bool(os.environ.get("HERMES_API_KEY", "").strip() or os.environ.get("NOUS_API_KEY", "").strip())
+
+
+def _gfl_status() -> dict[str, Any]:
+    if _hosted_demo_mode():
+        return {
+            "name": "Golden Field Lite bridge",
+            "ready": False,
+            "skipped": "Hosted Hermes demo uses the Hermes/Nous provider route only.",
+        }
+    return gfl_bridge.status()
+
+
 def _build_status() -> dict[str, Any]:
     global _STATUS_CACHE, _STATUS_CACHE_TS
     now = time.time()
 
-    gfl_status = gfl_bridge.status()
-    hermes_status = hermes.status()
+    hosted_provider_gate = _hosted_demo_mode() and not _hosted_model_configured()
+    gfl_status = _gfl_status()
+    hermes_status = (
+        {
+            "name": "Hermes Agent",
+            "ready": False,
+            "api_key_present": False,
+            "provider_gate": "Set HERMES_API_KEY or NOUS_API_KEY in Render.",
+            "skipped": "Hosted demo ignores local Hermes CLI auth when no Render provider key is set.",
+        }
+        if hosted_provider_gate
+        else hermes.status()
+    )
     openclaw_status = nemoclaw.status()
+    ollama_status = {"ready": False, "skipped": "A higher-priority runtime route is active"}
     if gfl_status.get("ready"):
         active = "golden-field-lite-hermes-bridge"
+        ollama_status = {"ready": False, "skipped": "Golden Field Lite bridge is active"}
     elif hermes_status.get("ready"):
         active = "hermes"
+        ollama_status = {"ready": False, "skipped": "Hermes/Nous route is active"}
+    elif hosted_provider_gate:
+        active = "provider-gated-hermes"
+        ollama_status = {"ready": False, "skipped": "Hosted Hermes demo disables local Ollama fallback."}
     elif openclaw_status.get("ready"):
         active = "nemohermes-openclaw"
         ollama_status = {"ready": False, "skipped": "OpenClaw route is active"}
@@ -45,11 +80,16 @@ def _build_status() -> dict[str, Any]:
         "golden_field_lite": gfl_status,
         "hermes": hermes_status,
         "ollama": ollama_status,
-        "contest_target": "NemoHermes + OpenClaw + NemoClaw",
+        "contest_target": "Hermes/Nous hosted route + Trismegistus proof receipts" if _hosted_demo_mode() else "NemoHermes + OpenClaw + NemoClaw",
         "current_truth": (
-            "Golden Field Lite supplies the known-good research partner bridge when ready. "
-            "OpenClaw/NemoClaw remains the worker receipt layer. External apply, email, "
-            "spend, or payment collection remains a separate connector receipt gate."
+            "Hosted Render UI is online, but Hermes/Nous model generation is provider-gated until "
+            "HERMES_API_KEY or NOUS_API_KEY is set."
+            if hosted_provider_gate
+            else (
+                "Golden Field Lite supplies the known-good research partner bridge when ready. "
+                "OpenClaw/NemoClaw remains the worker receipt layer. External apply, email, "
+                "spend, or payment collection remains a separate connector receipt gate."
+            )
         ),
     }
     _STATUS_CACHE = payload
@@ -77,6 +117,7 @@ def _ensure_background_refresh() -> None:
 
 
 def _checking_status() -> dict[str, Any]:
+    hosted_provider_gate = _hosted_demo_mode() and not _hosted_model_configured()
     return {
         "name": "Trismegistus model runtime",
         "active": "checking",
@@ -98,8 +139,13 @@ def _checking_status() -> dict[str, Any]:
         },
         "hermes": {"ready": False, "skipped": "runtime status refresh in progress"},
         "ollama": {"ready": False, "skipped": "runtime status refresh in progress"},
-        "contest_target": "NemoHermes + OpenClaw + NemoClaw",
-        "current_truth": "Runtime status is refreshing; chat generation uses the direct OpenClaw route.",
+        "contest_target": "Hermes/Nous hosted route + Trismegistus proof receipts" if _hosted_demo_mode() else "NemoHermes + OpenClaw + NemoClaw",
+        "current_truth": (
+            "Runtime status is refreshing; hosted Hermes/Nous generation is provider-gated until "
+            "HERMES_API_KEY or NOUS_API_KEY is set."
+            if hosted_provider_gate
+            else "Runtime status is refreshing; live chat generation is still being probed."
+        ),
     }
 
 
@@ -137,7 +183,7 @@ def _configured_openclaw_status() -> dict[str, Any]:
 
 def status() -> dict[str, Any]:
     now = time.time()
-    gfl_status = gfl_bridge.status()
+    gfl_status = _gfl_status()
     if gfl_status.get("ready"):
         openclaw_status = _configured_openclaw_status()
         return {
@@ -180,10 +226,21 @@ def generate(
     except ValueError:
         pass
 
-    gfl = gfl_bridge.generate(messages, max_tokens=max_tokens)
+    gfl = {"ok": False, "skipped": "Hosted Hermes demo uses the Hermes/Nous provider route only."}
+    if not _hosted_demo_mode():
+        gfl = gfl_bridge.generate(messages, max_tokens=max_tokens)
     if gfl.get("ok"):
         gfl["target_runtime"] = "Golden Field Lite Hermes bridge + OpenClaw/NemoClaw worker receipts"
         return gfl
+
+    if _hosted_demo_mode() and not _hosted_model_configured():
+        return {
+            "ok": False,
+            "source": "model_runtime",
+            "runtime_lane": "provider-gated-hermes",
+            "target_runtime": "Hermes/Nous hosted route + Trismegistus proof receipts",
+            "error": "Hosted Hermes/Nous generation is not connected. Set HERMES_API_KEY or NOUS_API_KEY in Render.",
+        }
 
     live_hermes = hermes.generate(messages, max_tokens=max_tokens)
     hermes_result = live_hermes.get("cli") if isinstance(live_hermes.get("cli"), dict) else live_hermes
