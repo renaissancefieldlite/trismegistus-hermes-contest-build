@@ -32,6 +32,7 @@ let activeThreadId = "tris-main";
 let cachedThreads = [];
 let talkbackEnabled = false;
 let speechRecognition = null;
+let chatSendInFlight = false;
 
 function onClick(id, handler) {
   const element = document.getElementById(id);
@@ -52,18 +53,30 @@ function state(ok, warn = false) {
   return warn ? "warn" : "bad";
 }
 
-async function api(path, payload = null) {
+async function api(path, payload = null, timeoutMs = 30000) {
+  const controller = new AbortController();
+  const timeout = window.setTimeout(() => controller.abort(), timeoutMs);
   const options = payload
     ? {
         method: "POST",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(payload),
+        signal: controller.signal,
       }
-    : {};
-  const response = await fetch(path, options);
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || `Request failed: ${path}`);
-  return data;
+    : {signal: controller.signal};
+  try {
+    const response = await fetch(path, options);
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || `Request failed: ${path}`);
+    return data;
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new Error(`Request timed out after ${Math.round(timeoutMs / 1000)} seconds.`);
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeout);
+  }
 }
 
 function chip(label, detail, cls) {
@@ -712,16 +725,19 @@ onClick("runWorker", async () => {
 
 document.getElementById("chatForm").addEventListener("submit", async (event) => {
   event.preventDefault();
+  if (chatSendInFlight) return;
   if (!activeThreadId) await loadThreads();
   if (!activeThreadId || !chatInput.value.trim()) return;
   const message = chatInput.value.trim();
   chatInput.value = "";
   let before = {messages: []};
+  chatSendInFlight = true;
+  sendChatButton.disabled = true;
   try {
     before = await api(`/api/thread-messages?thread_id=${encodeURIComponent(activeThreadId)}`);
     renderMessages([...before.messages, {role: "user", ts: "sending", content: message}]);
     reportState.textContent = "agent thinking";
-    const result = await api("/api/chat", {thread_id: activeThreadId, message});
+    const result = await api("/api/chat", {thread_id: activeThreadId, message}, 25000);
     renderMessages(result.messages || []);
     const assistantReply = [...(result.messages || [])].reverse().find((item) => item.role === "assistant")?.content || result.result?.text || "";
     if (result.result?.ok) {
@@ -757,8 +773,11 @@ document.getElementById("chatForm").addEventListener("submit", async (event) => 
       {role: "user", ts: "sent", content: message},
       {role: "system", ts: new Date().toISOString(), content: `Chat request failed cleanly: ${error.message}`},
     ]);
+  } finally {
+    await refresh().catch(() => {});
+    chatSendInFlight = false;
+    sendChatButton.disabled = !activeThreadId;
   }
-  await refresh().catch(() => {});
 });
 
 chatInput.addEventListener("keydown", (event) => {

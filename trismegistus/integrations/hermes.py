@@ -11,9 +11,21 @@ from pathlib import Path
 from typing import Any
 
 
+def _api_key() -> str:
+    return os.environ.get("HERMES_API_KEY", "").strip() or os.environ.get("NOUS_API_KEY", "").strip()
+
+
+def _api_key_source() -> str:
+    if os.environ.get("HERMES_API_KEY", "").strip():
+        return "HERMES_API_KEY"
+    if os.environ.get("NOUS_API_KEY", "").strip():
+        return "NOUS_API_KEY"
+    return ""
+
+
 def _headers() -> dict[str, str]:
     headers = {"Content-Type": "application/json"}
-    api_key = os.environ.get("HERMES_API_KEY", "").strip()
+    api_key = _api_key()
     if api_key:
         headers["Authorization"] = f"Bearer {api_key}"
     return headers
@@ -108,6 +120,8 @@ def status() -> dict[str, Any]:
         "endpoint": url,
         "model": os.environ.get("HERMES_MODEL", "hermes-agent"),
         "configured": bool(url),
+        "api_key_present": bool(_api_key()),
+        "api_key_source": _api_key_source(),
         "mode": "gateway-or-cli",
         "probe": probe,
         "cli": cli,
@@ -168,6 +182,14 @@ def _run_hermes_oneshot(messages: list[dict[str, str]], started: float) -> dict[
 
 def generate(messages: list[dict[str, str]], max_tokens: int = 450) -> dict[str, Any]:
     url = endpoint()
+    remote_auth_required = url.startswith("https://") or "nousresearch.com" in url
+    if remote_auth_required and not _api_key():
+        return {
+            "ok": False,
+            "source": "hermes",
+            "error": "Hermes/Nous provider key is not configured. Set HERMES_API_KEY or NOUS_API_KEY.",
+            "latency_ms": 0,
+        }
     payload = {
         "model": os.environ.get("HERMES_MODEL", "hermes-agent"),
         "messages": messages,
@@ -182,7 +204,11 @@ def generate(messages: list[dict[str, str]], max_tokens: int = 450) -> dict[str,
     )
     started = time.time()
     try:
-        with urllib.request.urlopen(request, timeout=25) as response:
+        timeout_seconds = int(os.environ.get("HERMES_TIMEOUT_SECONDS", "20"))
+    except ValueError:
+        timeout_seconds = 20
+    try:
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
             raw = response.read().decode("utf-8")
             data = json.loads(raw)
     except urllib.error.HTTPError as exc:
