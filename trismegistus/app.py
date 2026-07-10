@@ -393,6 +393,7 @@ def _is_presence_check(content: str) -> bool:
         "test 123",
         "testing 123",
         "yo tris",
+        "hi tris",
         "hey tris",
         "hello tris",
         "wake up",
@@ -404,7 +405,7 @@ def _is_presence_check(content: str) -> bool:
         return False
     if "123" in text and len(tokens) <= 16:
         return True
-    if text in {"hello", "hey", "yo", "test", "check"}:
+    if text in {"hi", "hello", "hey", "yo", "test", "check"}:
         return True
     return False
 
