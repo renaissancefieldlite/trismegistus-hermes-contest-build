@@ -92,6 +92,78 @@ def _read_body(handler: BaseHTTPRequestHandler) -> dict[str, Any]:
 
 def app_status() -> dict[str, Any]:
     db.init_db()
+    if os.environ.get("TRISMEGISTUS_HOSTED_DEMO") == "1":
+        runtime = model_runtime.status()
+        return {
+            "app": "Trismegistus",
+            "root": _display_path(ROOT),
+            "actual_root": str(ROOT),
+            "db": _display_path(db.DB_PATH),
+            "hosted_demo": True,
+            "hosted_model_configured": _hosted_live_model_configured(),
+            "golden_mark": {
+                "source_found": False,
+                "active_gate": "Hosted public demo uses bounded proof/status fields; local evidence manifests are not loaded on Render.",
+            },
+            "consent_chain": {"status": "hosted-demo-skipped"},
+            "integrations": {
+                "mac_mail": {"ready_for_draft_packets": False, "mode": "hosted-demo-skipped"},
+                "stripe": {"ready": False, "sandbox_ready": False, "payment_link_ready": False, "mode": "hosted-demo-skipped"},
+            },
+            "employee_ops": {
+                "quadro_outreach": {"ready_for_draft_packets": False, "mode": "hosted-demo-skipped"},
+                "stripe": {"ready": False, "sandbox_ready": False, "payment_link_ready": False, "mode": "hosted-demo-skipped"},
+            },
+            "model_runtime": runtime,
+            "agent_state": load_state(),
+            "project_memory": {
+                "project": {
+                    "name": "Trismegistus",
+                    "mission": "Hosted Hermes/Nous proof surface with provider-gated model generation.",
+                    "priority": "prove UI, chat router, and honest next gate before claiming live inference",
+                    "next_gate": "Set HERMES_API_KEY or NOUS_API_KEY in Render, then rerun the same prompts through model generation.",
+                    "lanes": [
+                        {
+                            "name": "Hosted route",
+                            "status": "provider-gated",
+                            "detail": "Render UI is live; hosted model generation waits on Hermes/Nous provider env keys.",
+                        },
+                        {
+                            "name": "Proof surface",
+                            "status": "live",
+                            "detail": "Demo prompts return bounded public-safe architecture/proof reads without claiming model generation.",
+                        },
+                    ],
+                },
+                "golden_mark": {
+                    "source_found": False,
+                    "active_gate": "Hosted public demo does not load local Golden Mark manifests.",
+                    "result_card_count": 0,
+                    "adapter_run_count": 0,
+                },
+                "json_memory_entries": 0,
+                "sqlite_exists": True,
+                "sqlite_path": _display_path(db.DB_PATH),
+                "langchain_available": False,
+                "langgraph_available": False,
+                "voice_chain": {"truth": "hosted voice chain disabled"},
+            },
+            "mirror_checkpoints": {
+                "ok": False,
+                "next_gate": "Use public receipts on the contest page; local scorecard manifests are not loaded by this hosted UI.",
+            },
+            "browser_missions": {
+                "ok": False,
+                "latest": {},
+                "webarena_subset": {"ok": False, "url": ""},
+                "next_gate": "Browser benchmark workers stay out of the public hosted demo.",
+            },
+            "evidence_lanes": [],
+            "source_missions": [],
+            "codex_build_requests": [],
+            "leads": [],
+            "recent_events": db.recent_events(),
+        }
     return {
         "app": "Trismegistus",
         "root": _display_path(ROOT),
