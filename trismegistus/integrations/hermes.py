@@ -75,6 +75,88 @@ def _models_probe() -> dict[str, Any]:
         }
 
 
+def _provider_gate_from_error(error: Any) -> str:
+    lower = str(error or "").lower()
+    if "401" in lower or "invalid" in lower or "blocked" in lower or "out of funds" in lower:
+        return "Hermes/Nous provider key is present, but the completion endpoint rejected it as invalid, blocked, or out of funds."
+    if "429" in lower or "rate limit" in lower or "quota" in lower:
+        return "Hermes/Nous provider key is present, but the completion endpoint is rate, quota, or funding gated."
+    if "timeout" in lower or "timed out" in lower:
+        return "Hermes/Nous provider key is present, but the completion endpoint timed out."
+    if "not configured" in lower or "provider key is not configured" in lower:
+        return "Set HERMES_API_KEY or NOUS_API_KEY in Render."
+    return "Hermes/Nous completion endpoint is not answering yet."
+
+
+def _completion_probe() -> dict[str, Any]:
+    url = endpoint()
+    remote_auth_required = url.startswith("https://") or "nousresearch.com" in url
+    if remote_auth_required and not _api_key():
+        return {
+            "ok": False,
+            "url": url,
+            "latency_ms": 0,
+            "provider_gate": "Set HERMES_API_KEY or NOUS_API_KEY in Render.",
+            "error": "Hermes/Nous provider key is not configured.",
+        }
+    payload = {
+        "model": os.environ.get("HERMES_MODEL", "hermes-agent"),
+        "messages": [{"role": "user", "content": "Reply with exactly: ok"}],
+        "temperature": 0,
+        "max_tokens": 8,
+    }
+    request = urllib.request.Request(
+        url,
+        data=json.dumps(payload).encode("utf-8"),
+        headers=_headers(),
+        method="POST",
+    )
+    started = time.time()
+    try:
+        timeout_seconds = int(os.environ.get("HERMES_STATUS_COMPLETION_TIMEOUT_SECONDS", "8"))
+    except ValueError:
+        timeout_seconds = 8
+    try:
+        with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+            raw = response.read().decode("utf-8", errors="replace")
+            data = json.loads(raw)
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", errors="replace")
+        error = f"HTTP {exc.code}: {detail[:500]}"
+        return {
+            "ok": False,
+            "url": url,
+            "status_code": exc.code,
+            "latency_ms": round((time.time() - started) * 1000),
+            "error": error,
+            "provider_gate": _provider_gate_from_error(error),
+        }
+    except Exception as exc:  # noqa: BLE001 - surfaced in UI
+        error = str(exc)
+        return {
+            "ok": False,
+            "url": url,
+            "latency_ms": round((time.time() - started) * 1000),
+            "error": error,
+            "provider_gate": _provider_gate_from_error(error),
+        }
+
+    text = ""
+    try:
+        text = str(data["choices"][0]["message"]["content"]).strip()
+    except (KeyError, IndexError, TypeError):
+        text = ""
+    ok = bool(text)
+    return {
+        "ok": ok,
+        "url": url,
+        "latency_ms": round((time.time() - started) * 1000),
+        "model": os.environ.get("HERMES_MODEL", "hermes-agent"),
+        "sample_text": text[:80],
+        "provider_gate": "" if ok else "Hermes/Nous completion endpoint returned no usable text.",
+    }
+
+
 def _run_hermes_status() -> dict[str, Any]:
     hermes_bin = shutil.which("hermes")
     if not hermes_bin:
@@ -114,10 +196,12 @@ def _run_hermes_status() -> dict[str, Any]:
 
 def status() -> dict[str, Any]:
     url = endpoint()
+    hosted_demo = os.environ.get("TRISMEGISTUS_HOSTED_DEMO") == "1"
     probe = _models_probe()
-    cli = _run_hermes_status()
+    completion_probe = _completion_probe()
+    cli = {"ok": False, "skipped": "Hosted demo uses the Render provider endpoint only."} if hosted_demo else _run_hermes_status()
     cli_text = str(cli.get("text", ""))
-    cli_ready = bool(
+    cli_ready = (not hosted_demo) and bool(
         cli.get("ok")
         and "Nous Portal" in cli_text
         and ("logged in" in cli_text or "✓" in cli_text)
@@ -131,9 +215,11 @@ def status() -> dict[str, Any]:
         "api_key_source": _api_key_source(),
         "mode": "gateway-or-cli",
         "probe": probe,
+        "completion_probe": completion_probe,
         "cli": cli,
         "cli_ready": cli_ready,
-        "ready": bool(probe.get("ok", False) or cli_ready),
+        "provider_gate": completion_probe.get("provider_gate", ""),
+        "ready": bool(completion_probe.get("ok", False) or cli_ready),
     }
 
 
@@ -189,6 +275,7 @@ def _run_hermes_oneshot(messages: list[dict[str, str]], started: float) -> dict[
 
 def generate(messages: list[dict[str, str]], max_tokens: int = 450) -> dict[str, Any]:
     url = endpoint()
+    hosted_demo = os.environ.get("TRISMEGISTUS_HOSTED_DEMO") == "1"
     remote_auth_required = url.startswith("https://") or "nousresearch.com" in url
     if remote_auth_required and not _api_key():
         return {
@@ -220,6 +307,14 @@ def generate(messages: list[dict[str, str]], max_tokens: int = 450) -> dict[str,
             data = json.loads(raw)
     except urllib.error.HTTPError as exc:
         detail = exc.read().decode("utf-8", errors="replace")
+        if hosted_demo:
+            return {
+                "ok": False,
+                "source": "hermes",
+                "error": f"HTTP {exc.code}: {detail[:500]}",
+                "provider_gate": _provider_gate_from_error(f"HTTP {exc.code}: {detail[:500]}"),
+                "latency_ms": round((time.time() - started) * 1000),
+            }
         cli = _run_hermes_oneshot(messages, started)
         if cli.get("ok"):
             cli["gateway_error"] = f"HTTP {exc.code}: {detail[:500]}"
@@ -232,6 +327,14 @@ def generate(messages: list[dict[str, str]], max_tokens: int = 450) -> dict[str,
             "cli": cli,
         }
     except Exception as exc:  # noqa: BLE001 - surfaced in UI
+        if hosted_demo:
+            return {
+                "ok": False,
+                "source": "hermes",
+                "error": str(exc),
+                "provider_gate": _provider_gate_from_error(str(exc)),
+                "latency_ms": round((time.time() - started) * 1000),
+            }
         cli = _run_hermes_oneshot(messages, started)
         if cli.get("ok"):
             cli["gateway_error"] = str(exc)

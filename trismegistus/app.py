@@ -626,7 +626,7 @@ def _hosted_demo_conversation_answer(content: str) -> str:
         return (
             "I can keep a normal chat thread, explain the Trismegistus architecture, turn rough concepts "
             "into system reads, and switch into receipt mode when you ask for proof. The live-provider key "
-            "is still the gate for true hosted Hermes generation; without that, this public route stays a "
+            "is still the gate for true hosted Hermes generation; without a valid funded key, this public route stays a "
             "bounded demo surface."
         )
     demo_terms = (
@@ -648,13 +648,14 @@ def _hosted_demo_conversation_answer(content: str) -> str:
         return (
             "Trismegistus should answer like a working partner: read the exact prompt, give a useful next "
             "move, and only bring in evidence labels when proof is requested. In this hosted route, the "
-            "conversation layer is live now; the remaining upgrade is connecting a Hermes/Nous key so the "
-            "same surface uses hosted model inference."
+            "UI and chat thread are live, while hosted model inference remains provider-gated until the "
+            "Hermes/Nous completion endpoint answers with a valid funded key."
         )
     return (
-        "Hosted Hermes generation is not connected on this Render service yet. This no-key fallback is "
+        "Hosted Hermes generation is provider-gated on this Render service. The key may be missing, "
+        "invalid, blocked, or out of funds. This bounded fallback is "
         "limited to Trismegistus demo, proof, memory, and architecture prompts so it does not pretend to "
-        "be a general AI chat. Add `HERMES_API_KEY` or `NOUS_API_KEY` in Render to unlock real hosted "
+        "be a general AI chat. Add or repair `HERMES_API_KEY` or `NOUS_API_KEY` in Render to unlock real hosted "
         "Hermes conversation."
     )
 
@@ -679,7 +680,7 @@ def _demo_result(text: str, source: str, runtime_lane: str) -> dict[str, Any]:
         "runtime_lane": runtime_lane,
         "model_generated": False,
         "requires_provider": True,
-        "provider_gate": "Set HERMES_API_KEY or NOUS_API_KEY in Render for real hosted Hermes generation.",
+        "provider_gate": "Connect a valid, unblocked, funded HERMES_API_KEY or NOUS_API_KEY in Render for real hosted Hermes generation.",
         "text": text,
     }
 

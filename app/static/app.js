@@ -228,7 +228,7 @@ function renderScoreboard() {
 
   scoreboard.innerHTML = [
     boardCard("Mission", "PARTNER", project.priority || "AI expert partner rehearsal first", "ok"),
-    boardCard("Hermes/Nous", runtimeLive ? "LIVE" : "GATE", hermesReady ? "Hosted Hermes/Nous route is answering chat turns" : (currentOpenclawReady ? "Named OpenClaw agent can answer through the contest route" : "Hosted model route is not ready"), runtimeLive ? "ok" : "warn"),
+    boardCard("Hermes/Nous", hermesReady ? "LIVE" : "GATE", hermesReady ? "Hosted Hermes/Nous route is answering chat turns" : "Hosted provider completion is gated", hermesReady ? "ok" : "warn"),
     boardCard("Telegram", telegramReady ? "LIVE" : "GATE", telegramReady ? "OpenClaw channel registered and policy applied" : "NemoClaw channel receipt pending", telegramReady ? "ok" : "warn"),
     boardCard("NemoClaw worker", autonomyReady ? "LOCAL" : "NEXT", autonomyReady ? "Local worker artifact saved; external sends still gated" : "Fresh OpenClaw/NemoClaw worker receipt is the autonomy gate", autonomyReady ? "ok" : "warn"),
     boardCard("CB5 foundation", goldenReady ? "FOUND" : "MISSING", golden.active_gate || "Golden Mark evidence lane", goldenReady ? "ok" : "bad"),
@@ -395,6 +395,7 @@ function renderRuntime(data) {
   const gfl = modelRuntime.golden_field_lite || {};
   const ollama = modelRuntime.ollama || {};
   const hermes = modelRuntime.hermes || data.hermes || {};
+  const hermesProviderGate = hermes.provider_gate || hermes.completion_probe?.provider_gate || modelRuntime.provider_gate || "";
   const nemo = data.nemoclaw || {};
   const blockers = nemo.blockers || [];
   const active = modelRuntime.active || "none";
@@ -413,7 +414,9 @@ function renderRuntime(data) {
   const chatModel = gflActive
     ? "OpenHermes 2.5 Mistral 7B 4-bit / MLX"
     : (hermesReady ? (hermes.model || "Hermes/Nous") : openclawModel);
-  const routeBlockedLabel = hostedDemo && !hostedModelConfigured ? "provider key required" : "route blocked";
+  const routeBlockedLabel = hostedDemo
+    ? (hostedModelConfigured ? "provider gated" : "provider key required")
+    : "route blocked";
 
   runtimeStrip.innerHTML = [
     chip("Chat route", gflActive ? "GFL Hermes/MLX" : (hermesReady ? "Hermes/Nous live" : (openclawReady ? "OpenClaw answers" : routeBlockedLabel)), state(gflActive || hermesReady || openclawReady)),
@@ -428,8 +431,10 @@ function renderRuntime(data) {
     ? `Hosted chat route: Hermes/Nous provider is answering as ${hermes.model || "Hermes"}. Worker/autonomy receipts remain separate from live conversation.`
     : openclawReady
     ? `Model route: OpenShell -> OpenClaw agent ${openclawAgent} -> ${openclawModel}. Worker artifacts are the autonomy gate.`
-    : hostedDemo && !hostedModelConfigured
-    ? "Hosted Render UI is online, but no Hermes/Nous provider key is connected. Chat responses are bounded proof/demo text until HERMES_API_KEY or NOUS_API_KEY is set."
+    : hostedDemo
+    ? (hermesProviderGate || (hostedModelConfigured
+      ? "Hosted Render UI is online, but the configured Hermes/Nous key is not producing chat completions yet."
+      : "Hosted Render UI is online, but no Hermes/Nous provider key is connected."))
     : `OpenClaw is not answering yet. Standby local model: ${ollama.model || "none"}.`;
   modelLaneState.textContent = modelReady ? "live" : "blocked";
   chatRuntimeLabel.textContent = gflActive
@@ -438,7 +443,7 @@ function renderRuntime(data) {
     ? "Hermes/Nous live"
     : openclawReady
     ? "OpenClaw model route live"
-    : hostedDemo && !hostedModelConfigured
+    : hostedDemo
     ? "Hermes provider gated"
     : "OpenClaw blocked";
   modelLanePanel.innerHTML = [
@@ -456,8 +461,8 @@ function renderRuntime(data) {
     runtimeItem("Golden Field Lite bridge", gflActive ? `Known-good research partner source is loaded read-only. Runtime ${gflRuntimeOnline ? "online" : "starts on demand"} at 127.0.0.1:8788.` : "GFL bridge not loaded yet.", state(gflActive)),
     runtimeItem("OpenClaw model route", openclawReady ? `Named agent ${openclawAgent} answered through the contest sandbox path.` : (blockers.join("; ") || "OpenClaw worker receipt pending."), state(openclawReady, nemoclawInstalled)),
     runtimeItem("Autonomous worker", "Local worker cycle can create trace artifacts. No job application, email, or Stripe live action is claimed until separate connector receipts exist.", "warn"),
-    runtimeItem("Model route", hermesReady ? `Hermes/Nous / ${hermes.model || "configured model"}` : (openclawReady ? `${routeProvider} / ${openclawModel}` : "No contest model route verified."), state(hermesReady || openclawReady)),
-    runtimeItem("Hermes endpoint", hermesReady ? "Hermes Agent / Nous route answered." : (hostedDemo && !hostedModelConfigured ? "No hosted Hermes/Nous key is connected on Render." : "Standalone Hermes endpoint is not the active lane when GFL bridge or OpenClaw is answering."), state(hermesReady, hostedDemo)),
+    runtimeItem("Model route", hermesReady ? `Hermes/Nous / ${hermes.model || "configured model"}` : (openclawReady ? `${routeProvider} / ${openclawModel}` : (hostedDemo ? "Hermes/Nous provider gated; no hosted model turn verified." : "No contest model route verified.")), state(hermesReady || openclawReady)),
+    runtimeItem("Hermes endpoint", hermesReady ? "Hermes Agent / Nous route answered." : (hostedDemo ? (hermesProviderGate || (hostedModelConfigured ? "Hosted Hermes/Nous key is present, but completions are not answering." : "No hosted Hermes/Nous key is connected on Render.")) : "Standalone Hermes endpoint is not the active lane when GFL bridge or OpenClaw is answering."), state(hermesReady, hostedDemo)),
   ].join("");
 
   foundationPanel.innerHTML = [
