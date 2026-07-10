@@ -980,6 +980,42 @@ def _source_entity_table(message: str) -> dict[str, Any]:
 
 def should_handle(message: str) -> bool:
     lower = message.lower()
+    plain_project_chat = (
+        "tell me about tris",
+        "tell me about trismegistus",
+        "what is tris",
+        "what is trismegistus",
+        "who is tris",
+        "who is trismegistus",
+        "about tris",
+        "about trismegistus",
+    )
+    source_or_receipt_intent = (
+        "source",
+        "sources",
+        "evidence",
+        "receipt",
+        "proof",
+        "rag",
+        "audit",
+        "benchmark",
+        "verify",
+        "research",
+        "fetch",
+        "read",
+        "look up",
+        "latest",
+        "current",
+        "status",
+        "indexed",
+        "database",
+        "memory",
+        "lane",
+    )
+    if any(phrase in lower for phrase in plain_project_chat) and not any(
+        term in lower for term in source_or_receipt_intent
+    ):
+        return False
     local_evidence_intent = (
         "tell me",
         "what do you know",

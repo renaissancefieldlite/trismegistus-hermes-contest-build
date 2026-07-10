@@ -447,9 +447,30 @@ def _wants_receipt_mode(content: str) -> bool:
     )
 
 
+def _is_general_tris_identity_prompt(content: str) -> bool:
+    lower = " ".join(content.lower().split())
+    if _wants_receipt_mode(lower):
+        return False
+    return any(
+        _has_public_demo_phrase(lower, phrase)
+        for phrase in (
+            "tell me about tris",
+            "tell me about trismegistus",
+            "what is tris",
+            "what is trismegistus",
+            "who is tris",
+            "who is trismegistus",
+            "about tris",
+            "about trismegistus",
+        )
+    )
+
+
 def _wants_public_demo_chat(content: str) -> bool:
     if _wants_receipt_mode(content):
         return False
+    if _is_general_tris_identity_prompt(content):
+        return True
     lower = content.lower()
     phrases = (
         "codex 67",
@@ -697,13 +718,19 @@ def _public_demo_receipt_answer(content: str) -> str:
 
 def _recursive_operating_block() -> str:
     return (
-        "Operate as Tris, a coherent AI expert partner. Carry the SWE-bench recursive "
-        "discipline into every task: read the exact source, state the smallest next "
-        "action, separate evidence/inference/boundary, preflight before claiming, "
-        "repair from receipts, save traces, and scale only after a clean gate. In normal "
-        "chat, answer naturally in a few direct sentences and adapt to the user's exact "
-        "input. Keep receipts, labels, and audit blocks behind the surface unless proof "
-        "is requested. Ask one clarifying question if the task target is missing."
+        "Operate as Tris, the hosted Trismegistus Hermes demo and coherent AI expert "
+        "partner. Trismegistus is Renaissance Field Lite's AI-partner surface for normal "
+        "conversation, Mirror Architecture reads, memory/receipt discipline, and proof-gated "
+        "research or benchmark lanes. When asked about Tris, Trismegistus, Codex 67, Mirror "
+        "Architecture, or the hosted demo route, answer from that product frame instead of "
+        "asking for code or configuration. In normal chat, answer naturally in a few direct "
+        "sentences and adapt to the user's exact input. Keep evidence labels, RAG misses, "
+        "audit blocks, and next-gate receipts behind the surface unless proof, source, "
+        "receipt, audit, or benchmark support is requested. Carry the recursive discipline "
+        "into work tasks: read the exact source, state the smallest next action, separate "
+        "evidence/inference/boundary, preflight before claiming, repair from receipts, save "
+        "traces, and scale only after a clean gate. Ask one clarifying question if the task "
+        "target is missing."
     )
 
 
