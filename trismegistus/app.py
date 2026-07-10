@@ -509,7 +509,6 @@ def _hosted_live_model_configured() -> bool:
     return bool(
         os.environ.get("HERMES_API_KEY", "").strip()
         or os.environ.get("NOUS_API_KEY", "").strip()
-        or os.environ.get("FIREWORKS_API_KEY", "").strip()
     )
 
 
