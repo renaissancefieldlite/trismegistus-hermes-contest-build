@@ -185,7 +185,6 @@ function renderScoreboard() {
   const reviewLeads = leads.filter((item) => displayStatus(item._status).includes("review")).length;
   const highValueLeads = leads.filter((item) => Number(item._score || 0) >= 5.2).length;
   const forecast = leadForecast(lead);
-  const runtimeLive = Boolean(currentOpenclawReady);
   const stripeLive = Boolean(stripe.ready);
   const appliedCount = (cachedStatus?.recent_events || []).filter((event) => event.kind === "application_sent").length;
   const emailConnected = Boolean(mail.ready_for_draft_packets);
@@ -200,9 +199,14 @@ function renderScoreboard() {
     : forecast;
   const autonomyLevel = String(agentState?.autonomy_level || "not-running").toUpperCase();
   const autonomyReady = Boolean(currentOpenclawReady && agentState?.autonomy_ready);
+  const hermesReady = Boolean(runtime.hermes?.ready || cachedRuntime?.hermes?.ready);
+  const runtimeLive = Boolean(runtime.ready || hermesReady || currentOpenclawReady);
+  const runtimeLabel = hermesReady
+    ? "Hermes/Nous live now"
+    : (currentOpenclawReady ? "OpenClaw live now" : "model route blocked now");
   const autonomyTruth = autonomyReady
     ? "current OpenClaw route plus saved receipt"
-    : (runtimeLive ? "OpenClaw route answers; current worker receipt pending" : "blocked until current OpenClaw route answers");
+    : (runtimeLive ? "Hosted model route answers; current worker receipt pending" : "blocked until current model route answers");
   const workerTrace = agentState?.trace_paths || {};
   const jsonMemoryCount = Number(memory.json_memory_entries || 0);
   const sqlReady = Boolean(memory.sqlite_exists);
@@ -224,7 +228,7 @@ function renderScoreboard() {
 
   scoreboard.innerHTML = [
     boardCard("Mission", "PARTNER", project.priority || "AI expert partner rehearsal first", "ok"),
-    boardCard("NemoHermes", runtimeLive ? "ROUTE" : "BRIDGE", runtimeLive ? "Named OpenClaw agent can answer through the contest route" : "GFL Hermes bridge carries chat while OpenClaw worker gate is verified", runtimeLive ? "ok" : "warn"),
+    boardCard("Hermes/Nous", runtimeLive ? "LIVE" : "GATE", hermesReady ? "Hosted Hermes/Nous route is answering chat turns" : (currentOpenclawReady ? "Named OpenClaw agent can answer through the contest route" : "Hosted model route is not ready"), runtimeLive ? "ok" : "warn"),
     boardCard("Telegram", telegramReady ? "LIVE" : "GATE", telegramReady ? "OpenClaw channel registered and policy applied" : "NemoClaw channel receipt pending", telegramReady ? "ok" : "warn"),
     boardCard("NemoClaw worker", autonomyReady ? "LOCAL" : "NEXT", autonomyReady ? "Local worker artifact saved; external sends still gated" : "Fresh OpenClaw/NemoClaw worker receipt is the autonomy gate", autonomyReady ? "ok" : "warn"),
     boardCard("CB5 foundation", goldenReady ? "FOUND" : "MISSING", golden.active_gate || "Golden Mark evidence lane", goldenReady ? "ok" : "bad"),
@@ -264,7 +268,7 @@ function renderScoreboard() {
     `Priority: ${project.priority || "runtime first"}`,
     `Next gate: ${project.next_gate || "wire worker loop"}`,
     "",
-    `Current runtime: ${runtimeLive ? "OpenClaw live now" : "OpenClaw blocked now"} / ${runtime.active || "unknown"}${openclaw.model ? ` / ${openclaw.model}` : ""}`,
+    `Current runtime: ${runtimeLabel} / ${runtime.active || "unknown"}${hermesReady && runtime.hermes?.model ? ` / ${runtime.hermes.model}` : openclaw.model ? ` / ${openclaw.model}` : ""}`,
     "Showtime mode: AI expert partner rehearsal; receipt mode stays behind the surface unless proof is requested.",
     openclaw.sandbox_phase ? `Current sandbox phase: ${openclaw.sandbox_phase}` : "",
     `Telegram channel: ${telegramReady ? "live" : "not live"} / ${openclaw.channel_gate || telegramChannel.summary || "not checked"}`,
@@ -406,11 +410,13 @@ function renderRuntime(data) {
   const openclawProvider = openclaw.nemohermes_status?.liveInference?.provider || "ollama-direct";
   const routeProvider = openclawReady ? `NemoHermes/OpenClaw (${openclawProvider})` : openclawProvider;
   const openclawAgent = openclaw.agent || nemo.agent || "trismegistus";
-  const chatModel = gflActive ? "OpenHermes 2.5 Mistral 7B 4-bit / MLX" : openclawModel;
+  const chatModel = gflActive
+    ? "OpenHermes 2.5 Mistral 7B 4-bit / MLX"
+    : (hermesReady ? (hermes.model || "Hermes/Nous") : openclawModel);
   const routeBlockedLabel = hostedDemo && !hostedModelConfigured ? "provider key required" : "route blocked";
 
   runtimeStrip.innerHTML = [
-    chip("Chat route", gflActive ? "GFL Hermes/MLX" : (openclawReady ? "OpenClaw answers" : routeBlockedLabel), state(gflActive || openclawReady)),
+    chip("Chat route", gflActive ? "GFL Hermes/MLX" : (hermesReady ? "Hermes/Nous live" : (openclawReady ? "OpenClaw answers" : routeBlockedLabel)), state(gflActive || hermesReady || openclawReady)),
     chip("Worker agent", openclawReady ? openclawAgent : "next gate", state(openclawReady, true)),
     chip("NemoClaw", telegramReady ? "telegram live" : (nemoclawInstalled ? (openclawReady ? "worker receipt" : "channel gate") : "CLI missing"), state(telegramReady || openclawReady, nemoclawInstalled)),
     chip("Model", modelReady ? chatModel : "no model answering", state(modelReady)),
@@ -418,6 +424,8 @@ function renderRuntime(data) {
 
   const modelText = gflActive
     ? `Chat route: Golden Field Lite bridge -> local Hermes/MLX checkpoint on 127.0.0.1:8788. Evidence docs: ${gfl.evidence_count ?? "n/a"}; JSONL: ${gfl.jsonl_entries ?? "n/a"}.`
+    : hermesReady
+    ? `Hosted chat route: Hermes/Nous provider is answering as ${hermes.model || "Hermes"}. Worker/autonomy receipts remain separate from live conversation.`
     : openclawReady
     ? `Model route: OpenShell -> OpenClaw agent ${openclawAgent} -> ${openclawModel}. Worker artifacts are the autonomy gate.`
     : hostedDemo && !hostedModelConfigured
@@ -426,6 +434,8 @@ function renderRuntime(data) {
   modelLaneState.textContent = modelReady ? "live" : "blocked";
   chatRuntimeLabel.textContent = gflActive
     ? "GFL Hermes bridge live"
+    : hermesReady
+    ? "Hermes/Nous live"
     : openclawReady
     ? "OpenClaw model route live"
     : hostedDemo && !hostedModelConfigured
@@ -446,7 +456,7 @@ function renderRuntime(data) {
     runtimeItem("Golden Field Lite bridge", gflActive ? `Known-good research partner source is loaded read-only. Runtime ${gflRuntimeOnline ? "online" : "starts on demand"} at 127.0.0.1:8788.` : "GFL bridge not loaded yet.", state(gflActive)),
     runtimeItem("OpenClaw model route", openclawReady ? `Named agent ${openclawAgent} answered through the contest sandbox path.` : (blockers.join("; ") || "OpenClaw worker receipt pending."), state(openclawReady, nemoclawInstalled)),
     runtimeItem("Autonomous worker", "Local worker cycle can create trace artifacts. No job application, email, or Stripe live action is claimed until separate connector receipts exist.", "warn"),
-    runtimeItem("Model route", openclawReady ? `${routeProvider} / ${openclawModel}` : "No contest model route verified.", state(openclawReady)),
+    runtimeItem("Model route", hermesReady ? `Hermes/Nous / ${hermes.model || "configured model"}` : (openclawReady ? `${routeProvider} / ${openclawModel}` : "No contest model route verified."), state(hermesReady || openclawReady)),
     runtimeItem("Hermes endpoint", hermesReady ? "Hermes Agent / Nous route answered." : (hostedDemo && !hostedModelConfigured ? "No hosted Hermes/Nous key is connected on Render." : "Standalone Hermes endpoint is not the active lane when GFL bridge or OpenClaw is answering."), state(hermesReady, hostedDemo)),
   ].join("");
 

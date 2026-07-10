@@ -53,11 +53,18 @@ def _models_probe() -> dict[str, Any]:
                 data: Any = json.loads(raw)
             except json.JSONDecodeError:
                 data = {"raw": raw[:500]}
+        models = data.get("data") if isinstance(data, dict) else None
+        sample: list[str] = []
+        if isinstance(models, list):
+            for item in models[:8]:
+                if isinstance(item, dict) and item.get("id"):
+                    sample.append(str(item["id"]))
         return {
             "ok": True,
             "url": url,
             "latency_ms": round((time.time() - started) * 1000),
-            "data": data,
+            "model_count": len(models) if isinstance(models, list) else None,
+            "sample_models": sample,
         }
     except Exception as exc:  # noqa: BLE001 - surfaced in UI
         return {
