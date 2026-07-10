@@ -1691,8 +1691,36 @@ def openai_chat_completions_cycle(body: dict[str, Any]) -> dict[str, Any]:
 class Handler(BaseHTTPRequestHandler):
     server_version = "TrismegistusHTTP/0.1"
 
+    def do_HEAD(self) -> None:  # noqa: N802
+        parsed = urlparse(self.path)
+        if parsed.path == "/api/health":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+            self.end_headers()
+            return
+        if parsed.path in ("/", "/index.html"):
+            if STATIC.joinpath("index.html").exists():
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html")
+                self.send_header("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0")
+                self.end_headers()
+                return
+        self.send_response(404)
+        self.end_headers()
+
     def do_GET(self) -> None:  # noqa: N802
         parsed = urlparse(self.path)
+        if parsed.path == "/api/health":
+            _json_response(
+                self,
+                {
+                    "ok": True,
+                    "app": "Trismegistus Hermes live demo",
+                    "service": "trismegistus-hermes-contest-build",
+                },
+            )
+            return
         if parsed.path == "/api/status":
             _json_response(self, app_status())
             return
@@ -1919,7 +1947,7 @@ def maybe_open_browser(url: str) -> None:
 
 def main() -> None:
     host = os.environ.get("TRISMEGISTUS_HOST", "127.0.0.1")
-    port = int(os.environ.get("TRISMEGISTUS_PORT", "8898"))
+    port = int(os.environ.get("PORT") or os.environ.get("TRISMEGISTUS_PORT", "8898"))
     db.init_db()
     url = f"http://{host}:{port}"
     maybe_open_browser(url)

@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: trismegistus-hermes-live
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: TRISMEGISTUS_HOST
+        value: 0.0.0.0
+      - key: TRISMEGISTUS_NO_OPEN
+        value: "1"
+      - key: TRISMEGISTUS_ALLOW_OLLAMA_FALLBACK
+        value: "0"
+      - key: HERMES_BASE_URL
+        sync: false
+      - key: HERMES_MODEL
+        sync: false
+      - key: HERMES_API_KEY
+        sync: false
+      - key: NEMOCLAW_OPENAI_BASE_URL
+        sync: false
+      - key: NEMOCLAW_API_KEY
+        sync: false
+      - key: NOUS_API_KEY
+        sync: false
+      - key: NEMOCLAW_PROVIDER_KEY
+        sync: false

@@ -1,0 +1,14 @@
+FROM python:3.12-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    TRISMEGISTUS_HOST=0.0.0.0 \
+    TRISMEGISTUS_NO_OPEN=1
+
+WORKDIR /app
+
+COPY . .
+
+EXPOSE 10000
+
+CMD ["python", "-m", "trismegistus.app"]

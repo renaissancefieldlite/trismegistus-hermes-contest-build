@@ -48,6 +48,43 @@ http://127.0.0.1:8898
 
 The app is dependency-light by design. Optional integrations are controlled by `.env` values.
 
+## Deploy Live Demo on Render
+
+This repo includes a public-safe Render Blueprint:
+
+```text
+render.yaml
+Dockerfile
+```
+
+Deploy from:
+
+```text
+https://dashboard.render.com/blueprint/new?repo=https://github.com/renaissancefieldlite/trismegistus-hermes-contest-build
+```
+
+Keep real provider values in Render environment variables only. Do not commit them.
+
+Required for a real live-model demo:
+
+- `HERMES_BASE_URL`
+- `HERMES_MODEL`
+- `HERMES_API_KEY`
+
+Optional worker/provider gates:
+
+- `NEMOCLAW_OPENAI_BASE_URL`
+- `NEMOCLAW_API_KEY`
+- `NOUS_API_KEY`
+- `NEMOCLAW_PROVIDER_KEY`
+
+Post-deploy smoke gates:
+
+- `/api/health` returns `{"ok": true, ...}`
+- `/` loads the Trismegistus UI
+- `/api/runtime` returns the runtime status JSON
+- `/api/chat` answers a presence probe, then a real Hermes/NemoClaw prompt when provider env vars are set
+
 ## Configure Optional Integrations
 
 ```bash
@@ -113,4 +150,3 @@ This package is built to be inspected. It excludes:
 - local model checkpoints
 - payment credentials
 - unreleased patent mechanics beyond public-safe language
-
