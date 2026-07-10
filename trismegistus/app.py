@@ -523,22 +523,33 @@ def _hosted_demo_conversation_answer(content: str) -> str:
             "is still the gate for true hosted Hermes generation; without that, this public route stays a "
             "bounded demo surface."
         )
-    if any(term in lower for term in ("why", "how", "what", "explain", "tell me")):
+    demo_terms = (
+        "trismegistus",
+        "tris",
+        "mirror",
+        "architecture",
+        "demo",
+        "receipt",
+        "proof",
+        "source",
+        "rag",
+        "memory",
+        "baseline",
+        "hermes",
+        "codex",
+    )
+    if any(term in lower for term in ("why", "how", "what", "explain", "tell me")) and any(term in lower for term in demo_terms):
         return (
             "Trismegistus should answer like a working partner: read the exact prompt, give a useful next "
             "move, and only bring in evidence labels when proof is requested. In this hosted route, the "
             "conversation layer is live now; the remaining upgrade is connecting a Hermes/Nous key so the "
             "same surface uses hosted model inference."
         )
-    if len(words) <= 12:
-        return (
-            "I am with you. Give me the rough concept, and I will turn it into a Trismegistus read: "
-            "what it means, how it maps to the architecture, and what proof gate comes next."
-        )
     return (
-        "I read that as a working prompt. The useful move is to pull out the structure, say what it means, "
-        "connect it to the Trismegistus route, and keep the proof boundary attached without dumping raw "
-        "receipts unless you ask for them."
+        "Hosted Hermes generation is not connected on this Render service yet. This no-key fallback is "
+        "limited to Trismegistus demo, proof, memory, and architecture prompts so it does not pretend to "
+        "be a general AI chat. Add `HERMES_API_KEY` or `NOUS_API_KEY` in Render to unlock real hosted "
+        "Hermes conversation."
     )
 
 
