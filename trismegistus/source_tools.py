@@ -980,6 +980,14 @@ def _source_entity_table(message: str) -> dict[str, Any]:
 
 def should_handle(message: str) -> bool:
     lower = message.lower()
+
+    def has_intent(term: str) -> bool:
+        escaped = re.escape(" ".join(term.lower().split())).replace(r"\ ", r"\s+")
+        return bool(re.search(rf"(?<![a-z0-9]){escaped}(?![a-z0-9])", lower))
+
+    def has_any_intent(terms: tuple[str, ...]) -> bool:
+        return any(has_intent(term) for term in terms)
+
     plain_project_chat = (
         "tell me about tris",
         "tell me about trismegistus",
@@ -1012,8 +1020,33 @@ def should_handle(message: str) -> bool:
         "memory",
         "lane",
     )
-    if any(phrase in lower for phrase in plain_project_chat) and not any(
-        term in lower for term in source_or_receipt_intent
+    strong_source_or_receipt_intent = (
+        "source",
+        "sources",
+        "evidence",
+        "receipt",
+        "proof",
+        "rag",
+        "audit",
+        "benchmark",
+        "verify",
+        "research",
+        "fetch",
+        "read",
+        "look up",
+        "latest",
+        "current",
+        "status",
+        "indexed",
+        "database",
+        "source row",
+        "evidence row",
+        "what is proven",
+        "what sources",
+        "next gate",
+    )
+    if any(phrase in lower for phrase in plain_project_chat) and not has_any_intent(
+        source_or_receipt_intent
     ):
         return False
     local_evidence_intent = (
@@ -1039,11 +1072,11 @@ def should_handle(message: str) -> bool:
     )
     if _wants_source_entities(message):
         return True
-    if any(term in lower for term in PROJECT_DOCTRINE_TERMS):
+    if any(term in lower for term in PROJECT_DOCTRINE_TERMS) and has_any_intent(strong_source_or_receipt_intent):
         return True
     if any(term in lower for term in BROWSER_SOURCE_TERMS) and any(term in lower for term in BROWSER_ACTION_TERMS):
         return True
-    if any(term in lower for term in LOCAL_EVIDENCE_TERMS) and any(term in lower for term in local_evidence_intent):
+    if any(term in lower for term in LOCAL_EVIDENCE_TERMS) and has_any_intent(strong_source_or_receipt_intent):
         return True
     if _extract_source_targets(message):
         return any(
