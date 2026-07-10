@@ -716,38 +716,49 @@ document.getElementById("chatForm").addEventListener("submit", async (event) => 
   if (!activeThreadId || !chatInput.value.trim()) return;
   const message = chatInput.value.trim();
   chatInput.value = "";
-  const before = await api(`/api/thread-messages?thread_id=${encodeURIComponent(activeThreadId)}`);
-  renderMessages([...before.messages, {role: "user", ts: "sending", content: message}]);
-  reportState.textContent = "agent thinking";
-  const result = await api("/api/chat", {thread_id: activeThreadId, message});
-  renderMessages(result.messages || []);
-  const assistantReply = [...(result.messages || [])].reverse().find((item) => item.role === "assistant")?.content || result.result?.text || "";
-  if (result.result?.ok) {
-    if (result.result.selected_lead_id) {
-      selectedLeadId = result.result.selected_lead_id;
+  let before = {messages: []};
+  try {
+    before = await api(`/api/thread-messages?thread_id=${encodeURIComponent(activeThreadId)}`);
+    renderMessages([...before.messages, {role: "user", ts: "sending", content: message}]);
+    reportState.textContent = "agent thinking";
+    const result = await api("/api/chat", {thread_id: activeThreadId, message});
+    renderMessages(result.messages || []);
+    const assistantReply = [...(result.messages || [])].reverse().find((item) => item.role === "assistant")?.content || result.result?.text || "";
+    if (result.result?.ok) {
+      if (result.result.selected_lead_id) {
+        selectedLeadId = result.result.selected_lead_id;
+      }
+      reportState.textContent = "model live";
+      reportOutput.textContent = [
+        `Model lane: ${result.result.runtime_lane || result.result.source}`,
+        result.result.provider ? `Provider: ${result.result.provider}` : "",
+        result.result.model ? `Model: ${result.result.model}` : "",
+        result.result.session_file ? `OpenClaw session: ${result.result.session_file}` : "",
+        result.result.trace_paths?.json ? `Trace JSON: ${result.result.trace_paths.json}` : "",
+        result.result.trace_paths?.markdown ? `Trace MD: ${result.result.trace_paths.markdown}` : "",
+        result.result.usage ? `Tokens: ${result.result.usage.total || "unknown"}` : "",
+        result.result.hermes_error ? `Hermes target: ${result.result.hermes_error}` : "",
+        result.result.autonomy_level ? `Autonomy: ${result.result.autonomy_level}${result.result.autonomy_ready ? " / active" : " / not autonomous yet"}` : "",
+      ].filter(Boolean).join("\n");
+      if (talkbackEnabled && assistantReply) {
+        api("/api/voice/speak", {text: assistantReply}).catch((error) => {
+          voiceState.textContent = `Talkback blocked: ${error.message}`;
+        });
+      }
+    } else {
+      reportState.textContent = "runtime blocked";
+      reportOutput.textContent = `Model runtime blocked:\n${result.result?.error || "unknown error"}`;
     }
-    reportState.textContent = "model live";
-    reportOutput.textContent = [
-      `Model lane: ${result.result.runtime_lane || result.result.source}`,
-      result.result.provider ? `Provider: ${result.result.provider}` : "",
-      result.result.model ? `Model: ${result.result.model}` : "",
-      result.result.session_file ? `OpenClaw session: ${result.result.session_file}` : "",
-      result.result.trace_paths?.json ? `Trace JSON: ${result.result.trace_paths.json}` : "",
-      result.result.trace_paths?.markdown ? `Trace MD: ${result.result.trace_paths.markdown}` : "",
-      result.result.usage ? `Tokens: ${result.result.usage.total || "unknown"}` : "",
-      result.result.hermes_error ? `Hermes target: ${result.result.hermes_error}` : "",
-      result.result.autonomy_level ? `Autonomy: ${result.result.autonomy_level}${result.result.autonomy_ready ? " / active" : " / not autonomous yet"}` : "",
-    ].filter(Boolean).join("\n");
-    if (talkbackEnabled && assistantReply) {
-      api("/api/voice/speak", {text: assistantReply}).catch((error) => {
-        voiceState.textContent = `Talkback blocked: ${error.message}`;
-      });
-    }
-  } else {
+  } catch (error) {
     reportState.textContent = "runtime blocked";
-    reportOutput.textContent = `Model runtime blocked:\n${result.result?.error || "unknown error"}`;
+    reportOutput.textContent = `Chat request failed:\n${error.message}`;
+    renderMessages([
+      ...(before.messages || []),
+      {role: "user", ts: "sent", content: message},
+      {role: "system", ts: new Date().toISOString(), content: `Chat request failed cleanly: ${error.message}`},
+    ]);
   }
-  await refresh();
+  await refresh().catch(() => {});
 });
 
 chatInput.addEventListener("keydown", (event) => {

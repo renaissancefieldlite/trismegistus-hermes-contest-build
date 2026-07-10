@@ -11,6 +11,12 @@ services:
         value: "1"
       - key: TRISMEGISTUS_ALLOW_OLLAMA_FALLBACK
         value: "0"
+      - key: TRISMEGISTUS_HOSTED_DEMO
+        value: "1"
+      - key: TRISMEGISTUS_ENABLE_OPENCLAW
+        value: "0"
+      - key: TRISMEGISTUS_MODEL_TIMEOUT_SECONDS
+        value: "8"
       - key: HERMES_BASE_URL
         sync: false
       - key: HERMES_MODEL

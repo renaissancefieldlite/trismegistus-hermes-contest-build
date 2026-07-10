@@ -335,14 +335,151 @@ def _is_presence_check(content: str) -> bool:
 
 
 def _presence_answer() -> str:
+    if os.environ.get("TRISMEGISTUS_HOSTED_DEMO") == "1":
+        return (
+            "I'm here. Trismegistus is live as a public demo surface: conversational first, "
+            "source-backed when you ask for proof, and honest about the next gate. Ask me what "
+            "I can do, ask about Codex 67 or Mirror Architecture, or ask for an evidence receipt "
+            "when you want the audit lane."
+        )
     return (
-        "I'm here, Architect D. Tris from the lattice is live on this Mac route. "
-        "Plain chat is on. A 123 check is a coherence probe: it tests whether I keep "
-        "the arc, answer naturally, avoid prompt/receipt spill, and remember that the "
-        "goal is a field-expert research/business partner. The SWE recursive loop is "
-        "the task discipline: inspect, preflight, repair, receipt, then scale. "
-        "Source/RAG missions only fire when you ask me to fetch, read, verify, "
-        "research, or run a worker cycle."
+        "I'm here, Architect D. Tris from the lattice is live. Plain chat is on. A 123 check "
+        "is a coherence probe: it tests whether I keep the arc, answer naturally, avoid "
+        "prompt/receipt spill, and remember that the goal is a field-expert research/business "
+        "partner. The SWE recursive loop is the task discipline: inspect, preflight, repair, "
+        "receipt, then scale. Source/RAG missions only fire when you ask me to fetch, read, "
+        "verify, research, or run a worker cycle."
+    )
+
+
+def _wants_receipt_mode(content: str) -> bool:
+    lower = content.lower()
+    return any(
+        term in lower
+        for term in (
+            "evidence",
+            "receipt",
+            "proof",
+            "source",
+            "sources",
+            "rag",
+            "audit",
+            "benchmark",
+            "verify",
+            "show me the receipt",
+            "what is proven",
+        )
+    )
+
+
+def _wants_public_demo_chat(content: str) -> bool:
+    if _wants_receipt_mode(content):
+        return False
+    lower = content.lower()
+    return any(
+        term in lower
+        for term in (
+            "codex 67",
+            "codex67",
+            "mirror architecture",
+            "hermes contest",
+            "live demo",
+            "demo route",
+            "render demo",
+            "what can you do",
+            "your features",
+            "features",
+            "tell me about yourself",
+            "tell me about your",
+            "who are you",
+            "what are you",
+        )
+    )
+
+
+def _wants_public_demo_receipt(content: str) -> bool:
+    if not _wants_receipt_mode(content):
+        return False
+    lower = content.lower()
+    return any(
+        term in lower
+        for term in (
+            "codex 67",
+            "codex67",
+            "mirror architecture",
+            "trismegistus",
+            "tris",
+            "hermes",
+            "features",
+            "live demo",
+            "demo route",
+        )
+    )
+
+
+def _public_demo_answer(content: str) -> str:
+    lower = content.lower()
+    if "route" in lower or "live demo" in lower or "render" in lower or "hermes contest" in lower:
+        return (
+            "The Hermes demo route is simple: the contest page sends judges to the hosted Render app, "
+            "the app opens in a normal chat thread, and Trismegistus answers conversationally until "
+            "someone asks for proof. When proof is requested, it switches into the receipt lane with "
+            "claim, evidence, boundary, and next gate in one clean read."
+        )
+    if "feature" in lower or "what can you do" in lower:
+        return (
+            "Trismegistus gives the judge a working AI-partner surface, not just a static video. "
+            "It can hold a chat thread, explain Codex 67 and Mirror Architecture in plain language, "
+            "switch into source-backed receipt mode on demand, compare baseline versus architecture-on "
+            "behavior, and name the next gate in product language. So the feature is not one trick; "
+            "it is a workflow: talk, recall, prove, bound, then continue."
+        )
+    if "mirror" in lower:
+        return (
+            "Mirror Architecture is the operating pattern behind Trismegistus: compare a baseline "
+            "response against an architecture-on route, preserve the evidence trail, and separate "
+            "what is proven from what still needs a gate. In normal chat I keep that lightweight, "
+            "then I can open the receipt lane when you ask for sources or benchmark support."
+        )
+    return (
+        "Codex 67 is the larger continuity spine behind this build: the part that keeps Tris tied "
+        "to memory, evidence, claims, and next gates instead of acting like a disconnected chatbot. "
+        "For the public demo, that becomes a practical behavior: I can explain the architecture in "
+        "plain language, recall the project frame, and switch into receipt mode only when you ask "
+        "for audit-level proof."
+    )
+
+
+def _public_demo_receipt_answer(content: str) -> str:
+    lower = content.lower()
+    if "feature" in lower:
+        claim = "Trismegistus is a working AI-partner demo surface with conversational, memory, proof, and next-gate behavior."
+        evidence = (
+            "The hosted app keeps persistent chat threads, answers public demo prompts directly, "
+            "routes explicit proof requests into receipt/RAG mode, and exposes health/runtime endpoints "
+            "so the surface can be checked from a clean browser."
+        )
+    elif "mirror" in lower:
+        claim = "Mirror Architecture is demonstrated as a comparison-and-receipt workflow, not just a slogan."
+        evidence = (
+            "The demo separates baseline/off behavior, architecture-on behavior, memory/RAG recall, "
+            "visible receipts, and next-gate language so a judge can see what changed and what remains gated."
+        )
+    else:
+        claim = "Codex 67 is represented here as the continuity and evidence spine behind Trismegistus."
+        evidence = (
+            "The public demo turns that spine into observable behavior: normal conversation, project-frame recall, "
+            "receipt mode when requested, and explicit boundaries around provider funding, benchmark adjudication, "
+            "and unsupported claims."
+        )
+    return "\n".join(
+        [
+            "Receipt read:",
+            f"Claim: {claim}",
+            f"Evidence: {evidence}",
+            "Boundary: this public route proves the hosted UI, conversational router, and receipt discipline; it does not claim model-weight tuning or official benchmark placement.",
+            "Next gate: add the funded Hermes provider key and run the same judge prompts through live model generation plus saved receipt comparison.",
+        ]
     )
 
 
@@ -729,6 +866,38 @@ def chat_selected(body: dict[str, Any]) -> dict[str, Any]:
                 "ok": True,
                 "source": "tris-local-presence",
                 "runtime_lane": "conversation-router",
+                "text": answer,
+            },
+            "messages": db.list_messages(lead_id),
+        }
+    if not benchmark_mode and _wants_public_demo_chat(content):
+        answer = _public_demo_answer(content)
+        db.save_message(lead_id, "assistant", answer)
+        db.log_event("chat_public_demo_answer", {"lead_id": lead_id, "source": "tris-public-demo"})
+        return {
+            "lead_id": lead_id,
+            "thread_id": lead_id,
+            "mode": "public-demo-chat",
+            "result": {
+                "ok": True,
+                "source": "tris-public-demo",
+                "runtime_lane": "conversational-demo",
+                "text": answer,
+            },
+            "messages": db.list_messages(lead_id),
+        }
+    if not benchmark_mode and _wants_public_demo_receipt(content):
+        answer = _public_demo_receipt_answer(content)
+        db.save_message(lead_id, "assistant", answer)
+        db.log_event("chat_public_demo_receipt", {"lead_id": lead_id, "source": "tris-public-demo-receipt"})
+        return {
+            "lead_id": lead_id,
+            "thread_id": lead_id,
+            "mode": "public-demo-receipt",
+            "result": {
+                "ok": True,
+                "source": "tris-public-demo-receipt",
+                "runtime_lane": "receipt-demo",
                 "text": answer,
             },
             "messages": db.list_messages(lead_id),

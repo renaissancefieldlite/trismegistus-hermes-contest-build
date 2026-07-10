@@ -175,6 +175,11 @@ def generate(
     session_key: str | None = None,
     timeout_seconds: int = 180,
 ) -> dict[str, Any]:
+    try:
+        timeout_seconds = min(timeout_seconds, int(os.environ.get("TRISMEGISTUS_MODEL_TIMEOUT_SECONDS", str(timeout_seconds))))
+    except ValueError:
+        pass
+
     gfl = gfl_bridge.generate(messages, max_tokens=max_tokens)
     if gfl.get("ok"):
         gfl["target_runtime"] = "Golden Field Lite Hermes bridge + OpenClaw/NemoClaw worker receipts"
@@ -187,12 +192,20 @@ def generate(
         hermes_result["target_runtime"] = "Hermes Agent + NemoClaw/OpenClaw worker receipts"
         return hermes_result
 
-    openclaw = nemoclaw.generate(
-        messages,
-        max_tokens=max_tokens,
-        session_key=session_key,
-        timeout_seconds=timeout_seconds,
-    )
+    if os.environ.get("TRISMEGISTUS_ENABLE_OPENCLAW", "1") == "1":
+        openclaw = nemoclaw.generate(
+            messages,
+            max_tokens=max_tokens,
+            session_key=session_key,
+            timeout_seconds=timeout_seconds,
+        )
+    else:
+        openclaw = {
+            "ok": False,
+            "source": "nemohermes-openclaw",
+            "runtime_lane": "nemohermes-openclaw",
+            "error": "OpenClaw/NemoClaw worker route is disabled on the hosted public demo.",
+        }
     if openclaw.get("ok"):
         openclaw["runtime_lane"] = "nemohermes-openclaw"
         openclaw["target_runtime"] = "NemoHermes + OpenClaw + NemoClaw"
