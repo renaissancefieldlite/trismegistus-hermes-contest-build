@@ -483,25 +483,62 @@ def _public_demo_answer(content: str) -> str:
 
 
 def _hosted_demo_conversation_answer(content: str) -> str:
-    lower = content.lower()
+    lower = " ".join(content.lower().split())
+    words = lower.split()
+    follow_up_terms = {
+        "what else",
+        "anything else",
+        "go on",
+        "continue",
+        "keep going",
+        "more",
+        "show more",
+        "next",
+        "then what",
+    }
+    if lower in follow_up_terms or (len(words) <= 4 and any(term in lower for term in ("else", "more", "next", "continue"))):
+        return (
+            "Next I would show concrete behavior, not another description: baseline answer first, "
+            "Mirror Architecture answer second, then a memory/receipt turn that names what changed. "
+            "After that I can take a rough idea or drawing and turn it into a usable system read with "
+            "the proof boundary attached."
+        )
+    if "contest" in lower or "submission" in lower:
+        return (
+            "For a contest submission, I would tighten the proof stack into four pieces: a live app link, "
+            "a short demo video, a slide/PDF summary, and one receipt page that says what is proven, what "
+            "is only a boundary, and what the next gate is. That gives judges something they can click, "
+            "watch, skim, and verify."
+        )
+    if any(term in lower for term in ("drawing", "diagram", "sketch", "paper", "image", "visual")):
+        return (
+            "For a drawing or visual, I would treat it as architecture input: name the parts, infer the "
+            "flow, turn it into a cleaner diagram, then mark the proof boundary. The useful output is not "
+            "a compliment about the image; it is a map someone else can understand and test."
+        )
+    if any(term in lower for term in ("feature", "what can you do", "tell me about your")):
+        return (
+            "I can keep a normal chat thread, explain the Trismegistus architecture, turn rough concepts "
+            "into system reads, and switch into receipt mode when you ask for proof. The live-provider key "
+            "is still the gate for true hosted Hermes generation; without that, this public route stays a "
+            "bounded demo surface."
+        )
     if any(term in lower for term in ("why", "how", "what", "explain", "tell me")):
         return (
-            "Clean read: Trismegistus is meant to behave like an AI partner that can keep context, "
-            "read a concept, and move it toward proof. In the hosted demo, I can talk through the idea, "
-            "map it into the Mirror Architecture workflow, and switch into receipt mode when you ask "
-            "for evidence. The important behavior is the loop: understand the input, name the structure, "
-            "separate proof from inference, then state the next useful gate."
+            "Trismegistus should answer like a working partner: read the exact prompt, give a useful next "
+            "move, and only bring in evidence labels when proof is requested. In this hosted route, the "
+            "conversation layer is live now; the remaining upgrade is connecting a Hermes/Nous key so the "
+            "same surface uses hosted model inference."
         )
-    if len(content.split()) <= 12:
+    if len(words) <= 12:
         return (
-            "I am with you. Say the concept in plain language and I will treat it as Trismegistus input: "
-            "conversation first, architecture read second, proof gate when needed."
+            "I am with you. Give me the rough concept, and I will turn it into a Trismegistus read: "
+            "what it means, how it maps to the architecture, and what proof gate comes next."
         )
     return (
-        "I read that as a Trismegistus working prompt, not a support ticket. The useful move is to pull "
-        "out the structure, say what it means, and keep the evidence boundary attached. My read: the input "
-        "is asking for a live AI-partner behavior, so I should answer naturally, connect it to the Mirror "
-        "Architecture route, and offer a next proof gate instead of dumping raw receipts."
+        "I read that as a working prompt. The useful move is to pull out the structure, say what it means, "
+        "connect it to the Trismegistus route, and keep the proof boundary attached without dumping raw "
+        "receipts unless you ask for them."
     )
 
 
