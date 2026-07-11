@@ -544,7 +544,7 @@ def _project_doctrine(message: str) -> dict[str, Any] | None:
             "claim": "Trismegistus is the Tris field node: a coherent conversational research partner and operator layer for Architect D's build surface.",
             "evidence": (
                 "Tris inherits the Golden Field Lite/Hermes conversational spine, uses Tris SQL/JSON/RAG memory, "
-                "routes source requests through the Telegram/OpenClaw field mission bridge, and organizes the "
+                "routes source requests through the Telegram/OpenClaw source-action bridge, and organizes the "
                 "Mirror Architecture work into six discipline partner lanes."
             ),
             "boundary": "This identifies the local operator role and keeps external actions review-gated until worker receipts exist.",
@@ -559,7 +559,7 @@ def _project_doctrine(message: str) -> dict[str, Any] | None:
             "claim": "The showtime job is to demonstrate Tris as a coherent AI expert partner with real receipts underneath.",
             "evidence": (
                 "Current foundation: SQL/JSON/RAG memory, Golden Mark/CB5 evidence, live Telegram channel, "
-                "source/field-mission bridge, browser traces, paid-work draft lane, WebArena hard receipt, "
+                "source-action bridge, browser traces, paid-work draft lane, WebArena hard receipt, "
                 "and SWE-bench local official selected-test foundation parked pending hosted/maintainer response."
             ),
             "boundary": "Normal chat should stay conversational. Audit receipts surface only when proof, source paths, or benchmark detail are requested.",
@@ -705,10 +705,10 @@ def _project_doctrine(message: str) -> dict[str, Any] | None:
             "ok": True,
             "source": "project-doctrine",
             "kind": "project-doctrine",
-            "topic": "telegram-field-mission-bridge",
+            "topic": "telegram-source-action-bridge",
             "claim": "Telegram should behave as the mobile Tris channel, not as a separate improvising bot.",
             "evidence": (
-                "The live gate is Telegram/OpenClaw -> Tris /api/field-mission -> saved source_missions "
+                "The live gate is Telegram/OpenClaw -> Tris source-action bridge -> saved source_missions "
                 "and RAG/source table receipts. Source requests should call the bridge directly, answer from "
                 "the saved receipt, and ask one clarifying question when the target is missing."
             ),
@@ -794,7 +794,7 @@ def _project_doctrine(message: str) -> dict[str, Any] | None:
             "topic": "openclaw-worker-gate",
             "claim": "The next OpenClaw/NemoClaw gate is a saved worker receipt, not another status card.",
             "evidence": (
-                "The browser/API field mission bridge has passed, and the sandbox can call the host bridge. "
+                "The browser/API source-action bridge has passed, and the sandbox can call the host bridge. "
                 "The next step is a live worker loop that takes a bounded mission, acts through the configured route, "
                 "and saves the session/JSON/Markdown receipt."
             ),

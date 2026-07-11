@@ -36,7 +36,7 @@ DRESS_REHEARSAL_PRIORITY = (
     "external action claims."
 )
 DRESS_REHEARSAL_NEXT_GATE = (
-    "Run the first live Telegram/OpenClaw phone mission through the field-mission bridge, "
+    "Run the first live Telegram/OpenClaw phone mission through the source-action bridge, "
     "save the source receipt, then demonstrate chat coherence, benchmark foundation, and "
     "relationship draft mode without sending or spending."
 )

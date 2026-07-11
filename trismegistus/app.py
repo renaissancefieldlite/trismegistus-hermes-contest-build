@@ -724,7 +724,7 @@ def _hosted_demo_conversation_answer(content: str) -> str:
         return (
             f"{gate} Hermes Tris features are concrete: Hermes-compatible chat surface; Mirror Architecture / "
             "SSP baseline-vs-architecture-on comparison; SQL and JSON memory; RAG/source tables; browser/source "
-            "missions; NemoClaw/OpenClaw/OpenShell worker route; Telegram field-mission bridge; SWE-bench, WebArena, "
+            "actions; NemoClaw/OpenClaw/OpenShell worker route; Telegram source-action bridge; SWE-bench, WebArena, "
             "GAIA, C5B, and 100-turn receipt lanes; code-helper loop for source inspection, patching, diff preflight, "
             "and harness receipts; Quadro CSI outreach packets; GitHub bounty scouting; Stripe sandbox/payment-link "
             "and Algora tracking gates; and quantum, math, structured-matter, and life-science research support. "
@@ -1778,7 +1778,7 @@ def browser_mission_cycle(action: str, body: dict[str, Any]) -> dict[str, Any]:
 
 
 def source_fetch_bridge(body: dict[str, Any]) -> dict[str, Any]:
-    """Compatibility bridge; source requests now save full field-mission receipts."""
+    """Compatibility bridge; source requests now save full source-action receipts."""
     message = " ".join(str(body.get("message") or body.get("query") or "").split()).strip()
     url = " ".join(str(body.get("url") or "").split()).strip()
     if url and url not in message:
@@ -1801,7 +1801,7 @@ def source_fetch_bridge(body: dict[str, Any]) -> dict[str, Any]:
     db.save_message(thread_id, "user", f"[source bridge request] {message}")
     db.save_message(thread_id, "assistant", answer)
     db.log_event(
-        "source_bridge_field_mission",
+        "source_bridge_action_receipt",
         {
             "thread_id": thread_id,
             "mission_id": mission.get("id"),
@@ -1814,13 +1814,13 @@ def source_fetch_bridge(body: dict[str, Any]) -> dict[str, Any]:
     return {
         "ok": bool(mission_result.get("ok")),
         "source": "tris-source-bridge",
-        "mode": "field-mission",
+        "mode": "source-action",
         "thread_id": thread_id,
         "answer": answer,
         "mission": mission,
         "receipt": (mission.get("receipt") or {}),
         "rag": mission_result.get("rag"),
-        "next_gate": "OpenClaw/Telegram should answer from this field mission receipt and stop improvising code for source requests.",
+        "next_gate": "OpenClaw/Telegram should answer from this source-action receipt and stop improvising code for source requests.",
     }
 
 
