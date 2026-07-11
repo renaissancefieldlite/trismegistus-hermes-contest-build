@@ -1,0 +1,92 @@
+{
+  "id": "mirror_architecture_evidence_stack_20260621",
+  "repo_url": "https://github.com/renaissancefieldlite/trismegistus-hermes-contest-build",
+  "truth_boundary": "Public-safe Trismegistus source cards. These cards support concept, architecture, and demo-boundary answers. They do not prove full private autonomy, official benchmark scores, live payments, live outreach, or a hosted Hermes provider unless the matching runtime receipt exists.",
+  "source_files": [
+    "docs/STACK_FLOW.md",
+    "docs/TRISMEGISTUS_PROJECT_PAPER_PUBLIC_SAFE_2026-06-30.md",
+    "docs/TRIS_BROWSER_AUTONOMY_STACK_2026-06-21.md",
+    "docs/GOLDEN_MARK_FOUNDATION.md",
+    "docs/PUBLIC_SAFE_RECEIPT_INDEX_2026-06-30.md"
+  ],
+  "cards": [
+    {
+      "id": "source_mirror_pattern",
+      "title": "Source Mirror Pattern / Mirror Architecture",
+      "support_state": "public_safe_concept_source",
+      "source_paths": [
+        "docs/STACK_FLOW.md",
+        "docs/TRISMEGISTUS_PROJECT_PAPER_PUBLIC_SAFE_2026-06-30.md"
+      ],
+      "claim": "Source Mirror Pattern is the public-facing concept spine behind Trismegistus: preserve long-context research continuity, compare baseline and architecture-on routes, separate proof from inference, and use receipts plus next gates instead of unsupported done claims.",
+      "evidence": "STACK_FLOW.md describes Trismegistus as an AI Expert Partner with Mirror Architecture / SSP, C5B / Golden Mark, SQL + JSON memory, RAG/source tables, mission queues, browser/source tools, Telegram, Mac Mail, Stripe sandbox gates, GitHub/code work, receipts, and separated benchmark lanes. The public paper frames Trismegistus as a partner that preserves continuity, compares routes, improves through receipts, and moves research toward real work.",
+      "boundary": "This supports concept and product architecture language. It is not a claim that every private worker lane is active on Render.",
+      "next_gate": "Use a live generated chat turn plus a saved turn receipt before claiming hosted inference, then run lane-specific receipts for benchmark or worker claims."
+    },
+    {
+      "id": "live_demo_public_boundary",
+      "title": "Hosted Render Demo Boundary",
+      "support_state": "public_safe_runtime_boundary",
+      "source_paths": [
+        "docs/TRISMEGISTUS_PROJECT_PAPER_PUBLIC_SAFE_2026-06-30.md",
+        "docs/PUBLIC_SAFE_RECEIPT_INDEX_2026-06-30.md"
+      ],
+      "claim": "The hosted demo is a public review surface: judges can click it, see the app move, ask concept/source questions, and inspect runtime truth without being told the full private stack is live.",
+      "evidence": "The public package boundary says to show process, code, selected receipts, and package story while avoiding claims of official leaderboard placement, paid revenue, or live autonomous spend/send/action without exact external receipts.",
+      "boundary": "Render does not automatically include local private memory, browser sessions, OpenClaw/NemoClaw workers, Telegram, Mac Mail, Stripe, or benchmark harness state.",
+      "next_gate": "Deploy the corrected runtime image, verify /api/runtime, verify /api/chat returns a generated model turn, and keep unsupported lanes gated."
+    },
+    {
+      "id": "tris_stack_features",
+      "title": "Trismegistus Public Stack Features",
+      "support_state": "source_pack_indexed",
+      "source_paths": [
+        "docs/STACK_FLOW.md"
+      ],
+      "claim": "Trismegistus is framed as conversational first, proof-gated when asked, and organized around Hermes baseline, Mirror Architecture / SSP architecture-on routing, SQL/JSON memory, RAG/source tables, worker tools, and receipt saving.",
+      "evidence": "STACK_FLOW.md lists six lanes: AI/agent architecture, quantum/circuits/math, structured matter/physical systems, life sciences/medical research, Mirror Architecture/Golden Mark evidence, and relationship/paid-work field operations.",
+      "boundary": "The public hosted app can expose the shape and source cards. Each lane still needs its own live receipt before stronger claims.",
+      "next_gate": "Keep chat natural by default; switch to claim/evidence/boundary/next-gate only when the user asks for proof, source, audit, benchmark, or receipt support."
+    },
+    {
+      "id": "benchmark_lane_separation",
+      "title": "Benchmark Lane Separation",
+      "support_state": "public_safe_benchmark_boundary",
+      "source_paths": [
+        "docs/STACK_FLOW.md",
+        "docs/GOLDEN_MARK_FOUNDATION.md",
+        "docs/TRIS_PUBLIC_BENCHMARK_COMPARISON_CONTEXT_2026-06-22.md"
+      ],
+      "claim": "Benchmark claims must stay separated by lane: C5B/Golden Mark, SWE-bench, WebArena, and GAIA are not interchangeable.",
+      "evidence": "The stack flow routes receipts into benchmark lanes after mission/tool output, and the public boundary warns against public leaderboard, WebArena, or GAIA claims before their exact receipts exist.",
+      "boundary": "A demo answer about benchmark architecture is not an official score.",
+      "next_gate": "For any benchmark prompt, name the lane, show the receipt if present, and state the missing receipt if absent."
+    },
+    {
+      "id": "browser_source_worker_tools",
+      "title": "Source / Browser / Worker Mission Tools",
+      "support_state": "source_pack_indexed",
+      "source_paths": [
+        "docs/TRIS_BROWSER_AUTONOMY_STACK_2026-06-21.md",
+        "docs/STACK_FLOW.md"
+      ],
+      "claim": "The Tris worker architecture separates browser/source missions from normal chat: Playwright/CDP handles browser action traces, Firecrawl-style ingestion supports source packs, and receipts become SQL/JSON/RAG memory.",
+      "evidence": "TRIS_BROWSER_AUTONOMY_STACK_2026-06-21.md describes Playwright primary, CDP host attachment, Firecrawl source-ingestion sidecar, WebArena/BrowserGym staging, saved traces, and field-mission bridges.",
+      "boundary": "The public Render demo should not claim the private/local browser worker is operating unless the current deployment saved the trace receipt.",
+      "next_gate": "When asked for live research or source fetch, run the source/browser mission and answer from its saved receipt."
+    },
+    {
+      "id": "claim_evidence_boundary_next_gate",
+      "title": "Claim / Evidence / Boundary / Next Gate Output",
+      "support_state": "source_pack_indexed",
+      "source_paths": [
+        "docs/TRISMEGISTUS_PROJECT_PAPER_PUBLIC_SAFE_2026-06-30.md",
+        "docs/PUBLIC_SAFE_RECEIPT_INDEX_2026-06-30.md"
+      ],
+      "claim": "Trismegistus should avoid fake completion by answering with claim, evidence, boundary, and next gate when proof is requested.",
+      "evidence": "The public package language separates what can be said from what must not be claimed without exact receipts.",
+      "boundary": "This format is for proof mode. Normal chat should remain conversational.",
+      "next_gate": "Use the format only when a user asks for proof, sources, audit, benchmark, or a receipt."
+    }
+  ]
+}

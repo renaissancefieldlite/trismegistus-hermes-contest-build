@@ -10,6 +10,11 @@ from . import db
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_PACK_DIR = ROOT / "data" / "source_packs"
+PUBLIC_DOC_ROOTS = [
+    ROOT / "README.md",
+    ROOT / "docs",
+    ROOT / "public-package",
+]
 
 
 def _slug(text: str) -> str:
@@ -24,6 +29,180 @@ def _load_json(path: Path) -> dict[str, Any] | None:
     except json.JSONDecodeError:
         return None
     return payload if isinstance(payload, dict) else None
+
+
+def _public_doc_paths() -> list[Path]:
+    paths: list[Path] = []
+    seen: set[Path] = set()
+    for root in PUBLIC_DOC_ROOTS:
+        if root.is_file():
+            candidates = [root]
+        elif root.exists():
+            candidates = sorted(root.rglob("*.md"))
+        else:
+            candidates = []
+        for path in candidates:
+            try:
+                relative = path.relative_to(ROOT)
+            except ValueError:
+                continue
+            if any(part in {"private", "secrets", "__pycache__"} for part in relative.parts):
+                continue
+            if path not in seen:
+                paths.append(path)
+                seen.add(path)
+    return paths
+
+
+def _clean_text(text: str) -> str:
+    return "\n".join(line.rstrip() for line in text.splitlines()).strip()
+
+
+def _section_chunks(path: Path, max_chars: int = 3200) -> list[dict[str, str]]:
+    try:
+        text = path.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return []
+    chunks: list[dict[str, str]] = []
+    heading = path.name
+    body: list[str] = []
+
+    def flush() -> None:
+        nonlocal body
+        clean = _clean_text("\n".join(body))
+        body = []
+        if len(clean) < 80:
+            return
+        while len(clean) > max_chars:
+            split_at = clean.rfind("\n", 0, max_chars)
+            if split_at < 800:
+                split_at = max_chars
+            part = clean[:split_at].strip()
+            if part:
+                chunks.append({"heading": heading, "body": part})
+            clean = clean[split_at:].strip()
+        if clean:
+            chunks.append({"heading": heading, "body": clean})
+
+    for raw_line in text.splitlines():
+        line = raw_line.rstrip()
+        if line.startswith("#"):
+            flush()
+            heading = line.lstrip("#").strip() or path.name
+            continue
+        body.append(line)
+    flush()
+    if not chunks and text.strip():
+        chunks.append({"heading": path.name, "body": _clean_text(text[:max_chars])})
+    return chunks
+
+
+def _lane_for_text(text: str) -> tuple[str, str, str]:
+    lower = text.lower()
+    if any(term in lower for term in ("swe-bench", "webarena", "gaia", "benchmark", "scorecard", "c5b", "golden mark")):
+        return (
+            "benchmark_foundation",
+            "Benchmark Foundation",
+            "Keep C5B/Golden Mark, SWE-bench, WebArena, and GAIA separated with receipt-specific claims.",
+        )
+    if any(term in lower for term in ("playwright", "browser", "source mission", "firecrawl", "cdp", "webarena")):
+        return (
+            "browser_source_worker_tools",
+            "Browser / Source Worker Tools",
+            "Do not claim live browser/source action without the saved mission or trace receipt.",
+        )
+    if any(term in lower for term in ("stripe", "mail", "outreach", "paid-work", "relationship", "bounty")):
+        return (
+            "relationship_paid_work_operations",
+            "Relationship / Paid-Work Operations",
+            "Draft, scout, and sandbox claims need separate external receipts before live-money or sent-message claims.",
+        )
+    if any(term in lower for term in ("mirror architecture", "source mirror", "ssp", "stable-state", "golden mark", "architecture-on")):
+        return (
+            "mirror_architecture_source_pack",
+            "Mirror Architecture Source Pack",
+            "Public source support for concept and route design, not standalone proof of hosted autonomy.",
+        )
+    return (
+        "trismegistus_public_package",
+        "Trismegistus Public Package",
+        "Public package support only; stronger claims require lane-specific receipts.",
+    )
+
+
+def seed_from_repository_docs() -> dict[str, Any]:
+    pack_id = "repository_public_docs"
+    inserted_docs = 0
+    inserted_sections = 0
+    inserted_memory = 0
+    lanes_seen: set[str] = set()
+    for path in _public_doc_paths():
+        if not path.exists():
+            continue
+        relative_path = str(path.relative_to(ROOT))
+        doc_id = f"{pack_id}:{_slug(relative_path)}"
+        db.save_source_document(
+            doc_id,
+            pack_id,
+            relative_path,
+            relative_path,
+            f"https://github.com/renaissancefieldlite/trismegistus-hermes-contest-build/blob/main/{relative_path}",
+            "repository_public_doc",
+            "Public repo documentation; not a live runtime receipt by itself.",
+            {"source_pack": pack_id, "relative_path": relative_path},
+        )
+        inserted_docs += 1
+        for idx, chunk in enumerate(_section_chunks(path), start=1):
+            combined = f"{chunk['heading']}\n{chunk['body']}"
+            lane_id, lane_name, lane_boundary = _lane_for_text(combined)
+            if lane_id not in lanes_seen:
+                db.save_discipline_lane(
+                    lane_id,
+                    lane_name,
+                    "indexed",
+                    "repository_public_docs",
+                    lane_boundary,
+                    {"source_pack": pack_id, "source": "repo-doc-ingest"},
+                )
+                lanes_seen.add(lane_id)
+            section_id = f"{doc_id}:section-{idx:03d}"
+            db.save_evidence_node(
+                section_id,
+                lane_id,
+                doc_id,
+                "repository_public_doc",
+                chunk["heading"],
+                chunk["body"][:1800],
+                "This is repository documentation indexed into SQL/RAG; use it as source support, not as proof of unsupported live action.",
+                lane_boundary,
+                {
+                    "source_pack": pack_id,
+                    "relative_path": relative_path,
+                    "heading": chunk["heading"],
+                    "section_index": idx,
+                },
+            )
+            if db.save_memory_item(
+                "repository_public_doc",
+                section_id,
+                f"{relative_path} :: {chunk['heading']}",
+                chunk["body"],
+                {
+                    "source_pack": pack_id,
+                    "relative_path": relative_path,
+                    "heading": chunk["heading"],
+                    "lane_id": lane_id,
+                },
+            ):
+                inserted_memory += 1
+            inserted_sections += 1
+    return {
+        "pack_id": pack_id,
+        "documents": inserted_docs,
+        "sections": inserted_sections,
+        "inserted_memory": inserted_memory,
+        "lanes": sorted(lanes_seen),
+    }
 
 
 def _source_url(pack: dict[str, Any], source_path: str) -> str:
@@ -273,6 +452,7 @@ def _seed_quantum_hrv_willow_pack(pack: dict[str, Any]) -> dict[str, Any]:
 def seed_from_source_packs() -> dict[str, Any]:
     SOURCE_PACK_DIR.mkdir(parents=True, exist_ok=True)
     results: list[dict[str, Any]] = []
+    results.append(seed_from_repository_docs())
     mirror_pack = _load_json(SOURCE_PACK_DIR / "mirror_architecture_evidence_stack_20260621.json")
     if mirror_pack:
         results.append(_seed_mirror_source_pack(mirror_pack))

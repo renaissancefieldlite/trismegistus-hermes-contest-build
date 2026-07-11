@@ -9,6 +9,10 @@ __pycache__/
 .venv-*/
 
 data/
+!data/
+data/*
+!data/source_packs/
+!data/source_packs/*.json
 private/
 secrets/
 *.sqlite

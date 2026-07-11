@@ -12,14 +12,12 @@ from typing import Any
 
 
 def _api_key() -> str:
-    return os.environ.get("HERMES_API_KEY", "").strip() or os.environ.get("NOUS_API_KEY", "").strip()
+    return os.environ.get("HERMES_API_KEY", "").strip()
 
 
 def _api_key_source() -> str:
     if os.environ.get("HERMES_API_KEY", "").strip():
         return "HERMES_API_KEY"
-    if os.environ.get("NOUS_API_KEY", "").strip():
-        return "NOUS_API_KEY"
     return ""
 
 
@@ -78,14 +76,14 @@ def _models_probe() -> dict[str, Any]:
 def _provider_gate_from_error(error: Any) -> str:
     lower = str(error or "").lower()
     if "401" in lower or "invalid" in lower or "blocked" in lower or "out of funds" in lower:
-        return "Hermes/Nous provider key is present, but the completion endpoint rejected it as invalid, blocked, or out of funds."
+        return "Hermes provider key is present, but the completion endpoint rejected it as invalid, blocked, or out of funds."
     if "429" in lower or "rate limit" in lower or "quota" in lower:
-        return "Hermes/Nous provider key is present, but the completion endpoint is rate, quota, or funding gated."
+        return "Hermes provider key is present, but the completion endpoint is rate, quota, or funding gated."
     if "timeout" in lower or "timed out" in lower:
-        return "Hermes/Nous provider key is present, but the completion endpoint timed out."
+        return "Hermes provider key is present, but the completion endpoint timed out."
     if "not configured" in lower or "provider key is not configured" in lower:
-        return "Set HERMES_API_KEY or NOUS_API_KEY in Render."
-    return "Hermes/Nous completion endpoint is not answering yet."
+        return "Set HERMES_API_KEY in Render."
+    return "Hermes completion endpoint is not answering yet."
 
 
 def _completion_probe() -> dict[str, Any]:
@@ -96,8 +94,8 @@ def _completion_probe() -> dict[str, Any]:
             "ok": False,
             "url": url,
             "latency_ms": 0,
-            "provider_gate": "Set HERMES_API_KEY or NOUS_API_KEY in Render.",
-            "error": "Hermes/Nous provider key is not configured.",
+            "provider_gate": "Set HERMES_API_KEY in Render.",
+            "error": "Hermes provider key is not configured.",
         }
     payload = {
         "model": os.environ.get("HERMES_MODEL", "hermes-agent"),
@@ -153,7 +151,7 @@ def _completion_probe() -> dict[str, Any]:
         "latency_ms": round((time.time() - started) * 1000),
         "model": os.environ.get("HERMES_MODEL", "hermes-agent"),
         "sample_text": text[:80],
-        "provider_gate": "" if ok else "Hermes/Nous completion endpoint returned no usable text.",
+        "provider_gate": "" if ok else "Hermes completion endpoint returned no usable text.",
     }
 
 
@@ -203,7 +201,6 @@ def status() -> dict[str, Any]:
     cli_text = str(cli.get("text", ""))
     cli_ready = (not hosted_demo) and bool(
         cli.get("ok")
-        and "Nous Portal" in cli_text
         and ("logged in" in cli_text or "✓" in cli_text)
     )
     return {
@@ -264,7 +261,7 @@ def _run_hermes_oneshot(messages: list[dict[str, str]], started: float) -> dict[
     return {
         "ok": proc.returncode == 0 and bool(text),
         "source": "hermes-cli",
-        "provider": "Nous Portal",
+        "provider": "Hermes CLI",
         "model": os.environ.get("HERMES_MODEL", "hermes-agent"),
         "text": text,
         "returncode": proc.returncode,
@@ -281,7 +278,7 @@ def generate(messages: list[dict[str, str]], max_tokens: int = 450) -> dict[str,
         return {
             "ok": False,
             "source": "hermes",
-            "error": "Hermes/Nous provider key is not configured. Set HERMES_API_KEY or NOUS_API_KEY.",
+            "error": "Hermes provider key is not configured. Set HERMES_API_KEY.",
             "latency_ms": 0,
         }
     payload = {

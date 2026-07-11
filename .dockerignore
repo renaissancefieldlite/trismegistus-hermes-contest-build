@@ -7,7 +7,16 @@
 __pycache__
 *.py[cod]
 .DS_Store
-data
+data/*
+!data/source_packs/
+!data/source_packs/*.json
+data/trismegistus.sqlite3
+data/turn_receipts/
+data/field_missions/
+data/persistent_memory.jsonl
+data/project_state.json
+data/*.pid
+data/*.log
 logs
 private
 secrets

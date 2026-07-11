@@ -65,17 +65,36 @@ https://dashboard.render.com/blueprint/new?repo=https://github.com/renaissancefi
 
 Keep real provider values in Render environment variables only. Do not commit them.
 
-Required for a real live-model demo:
+Default hosted model route:
 
 - `HERMES_BASE_URL`
 - `HERMES_MODEL`
 - `HERMES_API_KEY`
 
+Set these in Render secrets for the public live demo. Do not commit provider
+keys.
+
+Optional self-hosted GGUF route:
+
+- Build the Docker image with `--build-arg INSTALL_CPU_LLM=1`
+- `TRISMEGISTUS_ENABLE_CPU_LLM=1`
+- `TRISMEGISTUS_CPU_LLM_REPO=bartowski/Hermes-3-Llama-3.2-3B-GGUF`
+- `TRISMEGISTUS_CPU_LLM_FILE=Hermes-3-Llama-3.2-3B-IQ2_M.gguf`
+- `TRISMEGISTUS_CPU_LLM_TYPE=llama`
+
+The low-quant Hermes-3 GGUF can load on some small CPU containers, but it was
+too slow/unstable for a reliable cold public click demo in local Docker smoke.
+The default Render image does not compile that native stack. Use it only on a
+host class that proves `/api/chat` end-to-end. For professional field-expert
+quality, use a strong Hermes/OpenAI-compatible provider through `HERMES_*` env
+vars, or a host class with enough RAM for the official Hermes-3 Q4 or Nemotron
+GGUF target. SQL/JSON/RAG, source docs, and receipts operate as auxiliary
+context and audit memory; they do not replace the live model.
+
 Optional worker/provider gates:
 
 - `NEMOCLAW_OPENAI_BASE_URL`
 - `NEMOCLAW_API_KEY`
-- `NOUS_API_KEY`
 - `NEMOCLAW_PROVIDER_KEY`
 
 Post-deploy smoke gates:
@@ -83,7 +102,7 @@ Post-deploy smoke gates:
 - `/api/health` returns `{"ok": true, ...}`
 - `/` loads the Trismegistus UI
 - `/api/runtime` returns the runtime status JSON
-- `/api/chat` answers a presence probe, then a real Hermes/NemoClaw prompt when provider env vars are set
+- `/api/chat` answers with `runtime_lane=hermes` when the Hermes provider env vars are set and answering. Without a valid provider key, it must report the provider gate honestly; the optional `runtime_lane=cpu-local-gguf` route is only for a larger host where the GGUF model has been proven to load and answer.
 
 ## Configure Optional Integrations
 
@@ -96,6 +115,7 @@ Keep real values local. The public repo should only carry placeholders.
 Important gates:
 
 - `HERMES_BASE_URL` and `HERMES_MODEL`: Hermes-compatible local model route.
+- `TRISMEGISTUS_ENABLE_CPU_LLM=1`: optional GGUF fallback for real hosted chat on a host class that can prove the model loads and answers.
 - `NEMOCLAW_OPENAI_BASE_URL`: NemoClaw/Hermes OpenAI-compatible gateway.
 - `TELEGRAM_BOT_TOKEN`: Telegram field node bridge.
 - `TRIS_ALLOW_MAC_MAIL_SEND=0`: draft/receipt mode by default.

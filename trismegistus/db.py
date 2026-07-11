@@ -162,6 +162,19 @@ def init_db() -> None:
                 next_gate TEXT NOT NULL,
                 payload TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS turn_receipts (
+                id TEXT PRIMARY KEY,
+                ts TEXT NOT NULL,
+                thread_id TEXT NOT NULL,
+                lane TEXT NOT NULL,
+                mode TEXT NOT NULL,
+                model_ok INTEGER NOT NULL,
+                source_mission_id TEXT NOT NULL,
+                claim TEXT NOT NULL,
+                boundary TEXT NOT NULL,
+                next_gate TEXT NOT NULL,
+                payload TEXT NOT NULL
+            );
             """
         )
         try:
@@ -191,6 +204,90 @@ def log_event(kind: str, payload: dict[str, Any]) -> None:
             "INSERT INTO events (ts, kind, payload) VALUES (?, ?, ?)",
             (utc_now(), kind, json.dumps(payload, indent=2, sort_keys=True)),
         )
+
+
+def save_turn_receipt(
+    receipt_id: str,
+    thread_id: str,
+    lane: str,
+    mode: str,
+    model_ok: bool,
+    source_mission_id: str,
+    claim: str,
+    boundary: str,
+    next_gate: str,
+    payload: dict[str, Any],
+) -> None:
+    init_db()
+    with connect() as conn:
+        conn.execute(
+            """
+            INSERT OR REPLACE INTO turn_receipts
+            (id, ts, thread_id, lane, mode, model_ok, source_mission_id,
+             claim, boundary, next_gate, payload)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                receipt_id,
+                utc_now(),
+                thread_id,
+                lane,
+                mode,
+                1 if model_ok else 0,
+                source_mission_id,
+                claim,
+                boundary,
+                next_gate,
+                json.dumps(payload, indent=2, sort_keys=True),
+            ),
+        )
+
+
+def list_turn_receipts(thread_id: str | None = None, limit: int = 20) -> list[dict[str, Any]]:
+    init_db()
+    if thread_id:
+        sql = """
+            SELECT id, ts, thread_id, lane, mode, model_ok, source_mission_id,
+                   claim, boundary, next_gate, payload
+            FROM turn_receipts
+            WHERE thread_id = ?
+            ORDER BY ts DESC
+            LIMIT ?
+        """
+        params: tuple[Any, ...] = (thread_id, limit)
+    else:
+        sql = """
+            SELECT id, ts, thread_id, lane, mode, model_ok, source_mission_id,
+                   claim, boundary, next_gate, payload
+            FROM turn_receipts
+            ORDER BY ts DESC
+            LIMIT ?
+        """
+        params = (limit,)
+    with connect() as conn:
+        rows = conn.execute(sql, params).fetchall()
+    receipts: list[dict[str, Any]] = []
+    for row in rows:
+        try:
+            payload = json.loads(row["payload"])
+        except json.JSONDecodeError:
+            payload = {"raw": row["payload"]}
+        receipts.append(
+            {
+                "id": row["id"],
+                "ts": row["ts"],
+                "thread_id": row["thread_id"],
+                "lane": row["lane"],
+                "mode": row["mode"],
+                "model_ok": bool(row["model_ok"]),
+                "source_mission_id": row["source_mission_id"],
+                "claim": row["claim"],
+                "boundary": row["boundary"],
+                "next_gate": row["next_gate"],
+                "payload": payload,
+            }
+        )
+    return receipts
 
 
 def save_lead(lead: dict[str, Any], score: float, status: str) -> None:

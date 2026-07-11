@@ -212,6 +212,12 @@ def _wants_evidence_context(message: str, hits: list[dict[str, Any]]) -> bool:
             "phase",
             "nest",
             "lattice",
+            "trismegistus",
+            "expert partner",
+            "ai expert partner",
+            "what are you",
+            "how do you work",
+            "supposed to do",
         )
     )
 
@@ -229,8 +235,14 @@ def build_prompt(
         f"[{index + 1}] {hit.get('title')}\nPath: {hit.get('path')}\nExcerpt: {hit.get('excerpt')}"
         for index, hit in enumerate(hits)
     )
+    upstream_context = "\n\n".join(
+        str(item.get("content", "")).strip()
+        for item in history
+        if item.get("role") == "system" and str(item.get("content", "")).strip()
+    )
+    chat_history = [item for item in history if item.get("role") in {"user", "assistant"}]
     history_block = "\n".join(
-        f"{item.get('role', 'user').upper()}: {str(item.get('content', ''))[:900]}" for item in history[-6:]
+        f"{item.get('role', 'user').upper()}: {str(item.get('content', ''))[:900]}" for item in chat_history[-6:]
     )
     health = runtime_state.get("health") if isinstance(runtime_state.get("health"), dict) else {}
     runtime_block = "\n".join(
@@ -246,6 +258,12 @@ def build_prompt(
         ]
     )
     context_blocks: list[str] = []
+    if upstream_context:
+        context_blocks.append(
+            "Active Trismegistus turn packet from app SQL/JSON/RAG. Use this as first-class "
+            "context for project questions; do not flatten it into a generic assistant summary:\n"
+            f"{upstream_context[:7000]}"
+        )
     if include_runtime:
         context_blocks.append(
             f"""Runtime receipt, for status questions only:

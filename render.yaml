@@ -15,8 +15,22 @@ services:
         value: "1"
       - key: TRISMEGISTUS_ENABLE_OPENCLAW
         value: "0"
+      - key: TRISMEGISTUS_ENABLE_CPU_LLM
+        value: "0"
+      - key: TRISMEGISTUS_CPU_LLM_REPO
+        value: bartowski/Hermes-3-Llama-3.2-3B-GGUF
+      - key: TRISMEGISTUS_CPU_LLM_FILE
+        value: Hermes-3-Llama-3.2-3B-IQ2_M.gguf
+      - key: TRISMEGISTUS_CPU_LLM_TYPE
+        value: llama
+      - key: TRISMEGISTUS_CPU_LLM_THREADS
+        value: "2"
+      - key: TRISMEGISTUS_CPU_LLM_CONTEXT
+        value: "1024"
+      - key: TRISMEGISTUS_CPU_LLM_MAX_NEW_TOKENS
+        value: "140"
       - key: TRISMEGISTUS_MODEL_TIMEOUT_SECONDS
-        value: "8"
+        value: "120"
       - key: HERMES_TIMEOUT_SECONDS
         value: "20"
       - key: HERMES_BASE_URL
@@ -28,8 +42,6 @@ services:
       - key: NEMOCLAW_OPENAI_BASE_URL
         sync: false
       - key: NEMOCLAW_API_KEY
-        sync: false
-      - key: NOUS_API_KEY
         sync: false
       - key: NEMOCLAW_PROVIDER_KEY
         sync: false
