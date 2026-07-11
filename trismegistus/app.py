@@ -413,10 +413,11 @@ def _is_presence_check(content: str) -> bool:
 def _presence_answer() -> str:
     if os.environ.get("TRISMEGISTUS_HOSTED_DEMO") == "1":
         return (
-            "I'm here. Trismegistus is live as a public demo surface: conversational first, "
-            "source-backed when you ask for proof, and honest about the next gate. Ask me what "
-            "I can do, ask about Codex 67 or Mirror Architecture, or ask for an evidence receipt "
-            "when you want the audit lane."
+            "I'm here. The Trismegistus Render shell is online, but Hermes/Nous generation is "
+            "provider-gated until the key is valid and funded. In this gated mode I can still hold the "
+            "Hermes package spine: Mirror Architecture / SSP, source maps, baseline versus architecture-on, "
+            "worker receipts, benchmark boundaries, six lanes, and the next gate without pretending a live "
+            "model turn happened."
         )
     return (
         "I'm here, Architect D. Tris from the lattice is live. Plain chat is on. A 123 check "
@@ -591,6 +592,7 @@ def _public_demo_answer(content: str) -> str:
 def _hosted_demo_conversation_answer(content: str) -> str:
     lower = " ".join(content.lower().split())
     words = lower.split()
+    gate = "Provider-gated note: this is bounded Tris package logic, not a live Hermes/Nous model turn."
     follow_up_terms = {
         "what else",
         "anything else",
@@ -604,30 +606,124 @@ def _hosted_demo_conversation_answer(content: str) -> str:
     }
     if lower in follow_up_terms or (len(words) <= 4 and any(term in lower for term in ("else", "more", "next", "continue"))):
         return (
-            "Next I would show concrete behavior, not another description: baseline answer first, "
+            f"{gate} Next I would show concrete behavior, not another description: baseline answer first, "
             "Mirror Architecture answer second, then a memory/receipt turn that names what changed. "
             "After that I can take a rough idea or drawing and turn it into a usable system read with "
             "the proof boundary attached."
         )
+    if any(
+        phrase in lower
+        for phrase in (
+            "how do you work",
+            "how does this work",
+            "how do you operate",
+            "what are you supposed to do",
+            "what is tris hermes supposed to do",
+            "what is trismegistus supposed to do",
+            "what is this supposed to do",
+        )
+    ):
+        return (
+            f"{gate} Tris Hermes is supposed to run the loop that the final video names as the product: "
+            "learn a hard target, read sources, build a source map, run a baseline route, run the "
+            "Mirror Architecture-on route, test the result, save the receipt, and turn every gap into "
+            "the next gate. In normal use that should feel like a research and operations partner, not a "
+            "support bot: conversational when you ask a concept question, receipt-bound when you ask for "
+            "proof, and careful about what is local evidence versus external acceptance."
+        )
+    if any(term in lower for term in ("c5b", "golden mark", "stable-state path", "ssp")):
+        return (
+            f"{gate} C5B / Golden Mark is the measured SSP lane inside the Mirror Architecture package. "
+            "The clean story is baseline Hermes first, Mirror Architecture-on second, same task family, "
+            "same scorer, saved scorecards, then gap repair. The public-safe claim is 13/13 measured "
+            "metric means on the local scorecard; it is not a public leaderboard claim."
+        )
+    if any(term in lower for term in ("baseline", "architecture-on", "architecture on", "compare")):
+        return (
+            f"{gate} The comparison spine is the key: Hermes baseline is the control route, then the "
+            "Mirror Architecture-on route runs the same task family through the same scorer. The point is "
+            "not to market a vibe; it is to show what changes when source context, memory, evidence, task "
+            "state, and goal stay aligned long enough to produce better output."
+        )
+    if any(term in lower for term in ("swe", "swe-bench", "swebench", "leaderboard")):
+        return (
+            f"{gate} The SWE-bench story is pressure-test discipline: inspect source, write patches, "
+            "preflight unified diffs, run selected Verified rows through the official harness, and save "
+            "the local receipt. The package carries a local selected-test receipt around 495/500 and a "
+            "hosted evaluator submission boundary; it does not claim public leaderboard placement until "
+            "external review accepts it."
+        )
+    if any(term in lower for term in ("webarena", "gaia", "benchmark")):
+        return (
+            f"{gate} Benchmarks are separate receipt lanes, not one blended claim. SWE-bench is local "
+            "selected-test plus hosted-review boundary. WebArena has a hard receipt with final rows parked "
+            "for interpretation. GAIA remains staged/gated. Tris should name which lane is proven, which "
+            "is waiting, and what receipt would move it forward."
+        )
+    if any(term in lower for term in ("nvidia", "quantum", "circuit", "partnership", "willow")):
+        return (
+            f"{gate} The NVIDIA-facing quantum lane is source-backed outreach and technical packaging, "
+            "not a claim that a partnership was accepted. The package includes quantum computing/circuit "
+            "directions, Willow/Google-style proposal material, and draft-ready target packets with a "
+            "no-send boundary until approval and receipt."
+        )
+    if any(term in lower for term in ("paid", "payment", "stripe", "algora", "bounty", "quadro", "outreach")):
+        return (
+            f"{gate} The work lane is part of the product: Tris can scout targets, prepare Quadro CSI "
+            "outreach, track bounty work, stage Stripe sandbox/payment-link flows, and keep approval gates. "
+            "A public GitHub PR receipt proves the external coding process exists; paid revenue still "
+            "requires Algora or Stripe transaction proof."
+        )
+    if "hard research target" in lower or "nous gives" in lower or "research target" in lower:
+        return (
+            f"{gate} If Nous gives a hard research target, Tris should turn it into a source map, baseline, "
+            "architecture-on route, eval harness, worker loop, receipt trail, and next experiment. That is "
+            "the application story from the final video: a living research artifact that converts unknown "
+            "work into measurable gates."
+        )
+    if any(
+        phrase in lower
+        for phrase in (
+            "tell me about tris",
+            "tell me about trismegistus",
+            "what is tris",
+            "what is trismegistus",
+            "explain what tris is",
+            "explain what trismegistus is",
+            "who is tris",
+            "who is trismegistus",
+        )
+    ):
+        return (
+            f"{gate} Trismegistus is the Hermes contest build in the RFL AI partner line, beside Basis, "
+            "Golden Field Lite, and Quadro CSI. It is meant to be an AI Expert Partner for research, code, "
+            "memory, browser/source work, outreach, commerce gates, and field operations. The core idea is "
+            "not one chatbot answer; the loop is the product: track development, read sources, test routes, "
+            "save receipts, and turn gaps into next gates."
+        )
     if "contest" in lower or "submission" in lower:
         return (
-            "For a contest submission, I would tighten the proof stack into four pieces: a live app link, "
+            f"{gate} For a contest submission, I would tighten the proof stack into four pieces: a live app link, "
             "a short demo video, a slide/PDF summary, and one receipt page that says what is proven, what "
             "is only a boundary, and what the next gate is. That gives judges something they can click, "
             "watch, skim, and verify."
         )
     if any(term in lower for term in ("drawing", "diagram", "sketch", "paper", "image", "visual")):
         return (
-            "For a drawing or visual, I would treat it as architecture input: name the parts, infer the "
+            f"{gate} For a drawing or visual, I would treat it as architecture input: name the parts, infer the "
             "flow, turn it into a cleaner diagram, then mark the proof boundary. The useful output is not "
             "a compliment about the image; it is a map someone else can understand and test."
         )
     if any(term in lower for term in ("feature", "what can you do", "tell me about your")):
         return (
-            "I can keep a normal chat thread, explain the Trismegistus architecture, turn rough concepts "
-            "into system reads, and switch into receipt mode when you ask for proof. The live-provider key "
-            "is still the gate for true hosted Hermes generation; without a valid funded key, this public route stays a "
-            "bounded demo surface."
+            f"{gate} Hermes Tris features are concrete: Hermes-compatible chat surface; Mirror Architecture / "
+            "SSP baseline-vs-architecture-on comparison; SQL and JSON memory; RAG/source tables; browser/source "
+            "missions; NemoClaw/OpenClaw/OpenShell worker route; Telegram field-mission bridge; SWE-bench, WebArena, "
+            "GAIA, C5B, and 100-turn receipt lanes; code-helper loop for source inspection, patching, diff preflight, "
+            "and harness receipts; Quadro CSI outreach packets; GitHub bounty scouting; Stripe sandbox/payment-link "
+            "and Algora tracking gates; and quantum, math, structured-matter, and life-science research support. "
+            "The product behavior is to talk normally first, then open receipt mode on demand: claim, evidence, "
+            "boundary, next gate."
         )
     demo_terms = (
         "trismegistus",
@@ -646,10 +742,11 @@ def _hosted_demo_conversation_answer(content: str) -> str:
     )
     if any(term in lower for term in ("why", "how", "what", "explain", "tell me")) and any(term in lower for term in demo_terms):
         return (
-            "Trismegistus should answer like a working partner: read the exact prompt, give a useful next "
-            "move, and only bring in evidence labels when proof is requested. In this hosted route, the "
-            "UI and chat thread are live, while hosted model inference remains provider-gated until the "
-            "Hermes/Nous completion endpoint answers with a valid funded key."
+            f"{gate} Trismegistus should answer like the final package describes it: a research and operations "
+            "partner that preserves continuity under pressure. It should map the target, compare baseline "
+            "against architecture-on, save evidence rows, keep SQL/JSON/RAG memory, and say what receipt is "
+            "needed next. The current hosted model gate means this public response is explanatory, not live "
+            "Hermes inference."
         )
     return (
         "Hosted Hermes generation is provider-gated on this Render service. The key may be missing, "
